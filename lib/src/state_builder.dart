@@ -12,10 +12,25 @@ class StateBuilder<T> extends StatefulWidget {
 }
 
 class _StateBuilderState<T> extends State<StateBuilder<T>> {
+  late T _currentValue;
+
   @override
   void initState() {
     super.initState();
+    _currentValue = widget.state.value; // Initialize with current value
     widget.state.addListener(_update);
+  }
+
+  @override
+  void didUpdateWidget(StateBuilder<T> oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (oldWidget.state != widget.state) {
+      // If the state object changes, update listener
+      oldWidget.state.removeListener(_update);
+      widget.state.addListener(_update);
+    }
+    // Sync current value on rebuild (e.g., hot reload)
+    _currentValue = widget.state.value;
   }
 
   @override
@@ -24,8 +39,14 @@ class _StateBuilderState<T> extends State<StateBuilder<T>> {
     super.dispose();
   }
 
-  void _update() => setState(() {});
+  void _update() {
+    if (mounted) {
+      setState(() {
+        _currentValue = widget.state.value; // Update local value
+      });
+    }
+  }
 
   @override
-  Widget build(BuildContext context) => widget.builder(context, widget.state.value);
+  Widget build(BuildContext context) => widget.builder(context, _currentValue);
 }
