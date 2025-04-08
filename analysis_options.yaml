@@ -1,0 +1,15 @@
+include: package:flutter_lints/flutter.yaml
+
+analyzer: 
+  strong-mode:
+    implicit-casts: false
+    implicit-dynamic: false
+
+linter:
+  rules:
+    - always_declare_return_types
+    - prefer_const_constructors
+    - prefer_final_locals
+
+# Additional information about this file can be found at
+# https://dart.dev/guides/language/analysis-options
