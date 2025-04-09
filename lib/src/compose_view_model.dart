@@ -2,13 +2,14 @@ import 'dart:convert';
 import 'package:flutter/widgets.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
-abstract class ComposeViewModel {
-  void dispose() {}
+abstract class ComposeViewModel extends ChangeNotifier {
+  @override
+  void dispose() => super.dispose();
 }
 
 abstract class Serializable {
-  String toJson();
-  factory Serializable.fromJson(String json) => throw UnimplementedError();
+  Map<String, dynamic> toJson();
+  factory Serializable.fromJson(Map<String, dynamic> json) => throw UnimplementedError();
 }
 
 mixin Persistable on ComposeViewModel {
@@ -21,7 +22,7 @@ mixin Persistable on ComposeViewModel {
     if (toJson != null) {
       await prefs.setString(key, toJson(value));
     } else if (value is Serializable) {
-      await prefs.setString(key, value.toJson());
+      await prefs.setString(key, jsonEncode(value.toJson()));
     } else if (value is int) {
       await prefs.setInt(key, value);
     } else if (value is String) {
@@ -41,7 +42,6 @@ mixin Persistable on ComposeViewModel {
   Future<T?> restore<T>(String key, {T Function(String)? fromJson}) async {
     final prefs = await SharedPreferences.getInstance();
     if (!prefs.containsKey(key)) return null;
-
     if (fromJson != null) {
       final json = prefs.getString(key);
       return json != null ? fromJson(json) : null;
@@ -51,22 +51,18 @@ mixin Persistable on ComposeViewModel {
     if (T == bool) return prefs.getBool(key) as T?;
     if (T == double) return prefs.getDouble(key) as T?;
     if (T == List<String>) return prefs.getStringList(key) as T?;
-
     final raw = prefs.getString(key);
-    if (raw == null) return null;
-
-    if (raw.endsWith('|dynamic')) {
+    if (raw != null && raw.endsWith('|dynamic')) {
       final json = raw.substring(0, raw.length - '|dynamic'.length);
       return jsonDecode(json) as T;
     }
-
-    throw UnsupportedError('Use fromJson or implement Serializable for type $T');
+    return null;
   }
 
   Future<void> persistDynamicList(String key, List<dynamic> values) async {
     final tagged = values.map((v) {
       if (v is Serializable) {
-        return {'type': v.runtimeType.toString(), 'data': v.toJson()};
+        return {'type': v.runtimeType.toString(), 'data': jsonEncode(v.toJson())};
       }
       return {'type': 'dynamic', 'data': jsonEncode(v)};
     }).toList();
@@ -85,30 +81,50 @@ mixin Persistable on ComposeViewModel {
   }
 }
 
-class ViewModelScope extends InheritedWidget {
-  final Map<Type, ComposeViewModel> _viewModels;
+class ViewModelScope extends StatefulWidget {
+  final Map<Type, ComposeViewModel> viewModels;
+  final Widget child;
 
-  const ViewModelScope({
-    super.key,
-    required Map<Type, ComposeViewModel> viewModels,
-    required super.child,
-  }) : _viewModels = viewModels;
+  const ViewModelScope({super.key, required this.viewModels, required this.child});
 
   static T of<T extends ComposeViewModel>(BuildContext context) {
-    final scope = context.dependOnInheritedWidgetOfExactType<ViewModelScope>();
+    final scope = context.dependOnInheritedWidgetOfExactType<_InheritedViewModelScope>();
     if (scope == null) throw Exception('No ViewModelScope found in context');
-    final viewModel = scope._viewModels[T];
+    final viewModel = scope.viewModels[T];
     if (viewModel == null) throw Exception('No ViewModel of type $T found in scope');
     return viewModel as T;
   }
 
   @override
-  bool updateShouldNotify(ViewModelScope oldWidget) => _viewModels != oldWidget._viewModels;
+  State<ViewModelScope> createState() => _ViewModelScopeState();
+}
 
+class _ViewModelScopeState extends State<ViewModelScope> {
+  @override
   void dispose() {
-    for (final vm in _viewModels.values) {
+    for (final vm in widget.viewModels.values) {
       vm.dispose();
     }
-    _viewModels.clear();
+    super.dispose();
   }
+
+  @override
+  Widget build(BuildContext context) {
+    return _InheritedViewModelScope(
+      viewModels: widget.viewModels,
+      child: widget.child,
+    );
+  }
+}
+
+class _InheritedViewModelScope extends InheritedWidget {
+  final Map<Type, ComposeViewModel> viewModels;
+
+  const _InheritedViewModelScope({
+    required this.viewModels,
+    required super.child,
+  });
+
+  @override
+  bool updateShouldNotify(_InheritedViewModelScope oldWidget) => viewModels != oldWidget.viewModels;
 }

@@ -1,5 +1,4 @@
 import 'dart:convert';
-
 import 'package:flutter_test/flutter_test.dart';
 import 'package:compose_state/compose_state.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -50,7 +49,10 @@ void main() {
       final data = TestSerializable(value: 100);
 
       await vm.persist('key', data);
-      final restored = await vm.restore<TestSerializable>('key', fromJson: TestSerializable.fromJson);
+      final restored = await vm.restore<TestSerializable>(
+        'key',
+        fromJson: (json) => TestSerializable.fromJson(jsonDecode(json) as Map<String, dynamic>),
+      );
 
       expect(restored?.value, 100);
     });
@@ -59,7 +61,9 @@ void main() {
 
 class TestViewModel extends ComposeViewModel with Persistable {
   @override
-  void dispose() {}
+  void dispose() {
+    super.dispose(); // Call super.dispose() for ChangeNotifier
+  }
 }
 
 class TestSerializable implements Serializable {
@@ -68,11 +72,10 @@ class TestSerializable implements Serializable {
   TestSerializable({required this.value});
 
   @override
-  String toJson() => '{"value": $value}';
+  Map<String, dynamic> toJson() => {'value': value};
 
-  factory TestSerializable.fromJson(String json) {
-    final map = jsonDecode(json) as Map<String, dynamic>;
-    return TestSerializable(value: map['value'] as int);
+  factory TestSerializable.fromJson(Map<String, dynamic> json) {
+    return TestSerializable(value: json['value'] as int);
   }
 
   @override
