@@ -1,8 +1,11 @@
 import 'package:flutter/widgets.dart';
-import 'mutable_state.dart';
+
+abstract class ObservableState<T> extends ChangeNotifier {
+  T get value;
+}
 
 class StateBuilder<T> extends StatefulWidget {
-  final MutableState<T> state;
+  final ObservableState<T> state; // Changed from MutableState<T> to ObservableState<T>
   final Widget Function(BuildContext, T) builder;
 
   const StateBuilder({super.key, required this.state, required this.builder});

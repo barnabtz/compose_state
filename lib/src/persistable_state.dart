@@ -3,12 +3,13 @@ import 'package:flutter/foundation.dart';
 import 'compose_view_model.dart';
 import 'history_state.dart';
 import 'mutable_state.dart';
+import 'state_builder.dart';
 
-class PersistableState<T> extends ChangeNotifier {
+class PersistableState<T> extends ChangeNotifier implements ObservableState<T> {
   final MutableState<T> _state;
   final String _key;
   final Persistable _persistable;
-  final Map<String, Serializable Function(String)>? typeRegistry; // Renamed from _typeRegistry
+  final Map<String, Serializable Function(String)>? typeRegistry;
   Timer? _debounceTimer;
   static const _debounceDuration = Duration(milliseconds: 500);
 
@@ -16,7 +17,7 @@ class PersistableState<T> extends ChangeNotifier {
     T initialValue, {
     required String fieldName,
     required Persistable persistable,
-    this.typeRegistry, // Renamed from _typeRegistry
+    this.typeRegistry,
     bool enableHistory = false,
   })  : _state = enableHistory ? HistoryState(initialValue) : MutableState(initialValue),
         _key = '${persistable.runtimeType}_$fieldName',
@@ -25,6 +26,7 @@ class PersistableState<T> extends ChangeNotifier {
     _load();
   }
 
+  @override
   T get value => _state.value;
 
   set value(T newValue) {
@@ -41,7 +43,7 @@ class PersistableState<T> extends ChangeNotifier {
   }
 
   Future<void> _load() async {
-    if (_state.value is List && typeRegistry != null) { // Use typeRegistry without underscore
+    if (_state.value is List && typeRegistry != null) {
       final saved = await _persistable.restoreDynamicList(_key, typeRegistry!);
       if (saved.isNotEmpty) _state.setValue(saved as T);
     } else {
@@ -51,7 +53,7 @@ class PersistableState<T> extends ChangeNotifier {
   }
 
   Future<void> _persist() async {
-    if (_state.value is List && typeRegistry != null) { // Use typeRegistry without underscore
+    if (_state.value is List && typeRegistry != null) {
       await _persistable.persistDynamicList(_key, _state.value as List<dynamic>);
     } else {
       await _persistable.persist(_key, _state.value);
@@ -66,7 +68,7 @@ class PersistableState<T> extends ChangeNotifier {
   @override
   void dispose() {
     _debounceTimer?.cancel();
-    _persist(); // Save final state
+    _persist();
     _state.removeListener(notifyListeners);
     _state.dispose();
     super.dispose();
@@ -84,6 +86,6 @@ PersistableState<T> persistableState<T>(
       initialValue,
       fieldName: fieldName,
       persistable: persistable,
-      typeRegistry: typeRegistry, // Pass typeRegistry correctly
+      typeRegistry: typeRegistry,
       enableHistory: enableHistory,
     );

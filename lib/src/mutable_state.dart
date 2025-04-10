@@ -1,10 +1,12 @@
 import 'package:flutter/foundation.dart';
+import 'state_builder.dart';
 
-class MutableState<T> extends ChangeNotifier {
+class MutableState<T> extends ChangeNotifier implements ObservableState<T> {
   T _value;
 
   MutableState(this._value);
 
+  @override
   T get value => _value;
 
   set value(T newValue) {

@@ -1,6 +1,7 @@
 import 'mutable_state.dart';
+import 'state_builder.dart';
 
-class HistoryState<T> extends MutableState<T> {
+class HistoryState<T> extends MutableState<T> implements ObservableState<T> {
   final List<T> _history = [];
   int _historyIndex = -1;
 
