@@ -1,5 +1,5 @@
-import 'package:compose_state/compose_state.dart';
 import 'package:flutter/widgets.dart';
+import 'state_builder.dart';
 
 sealed class UiState<T> {
   const UiState();
@@ -20,7 +20,7 @@ class Error<T> extends UiState<T> {
 }
 
 class UiStateBuilder<T> extends StatelessWidget {
-  final MutableState<UiState<T>> state;
+  final ObservableState<UiState<T>> state; // Changed from MutableState<UiState<T>>
   final Widget Function(BuildContext) loading;
   final Widget Function(BuildContext, T) success;
   final Widget Function(BuildContext, String) error;
