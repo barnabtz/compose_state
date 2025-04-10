@@ -12,9 +12,6 @@ class ApiState<T> extends MutableState<UiState<T>> {
       value = Error(e.toString());
     }
   }
-
-  @override
-  void dispose() => super.dispose();
 }
 
 ApiState<T> apiStateOf<T>() => ApiState<T>();

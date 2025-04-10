@@ -2,10 +2,7 @@ import 'dart:convert';
 import 'package:flutter/widgets.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
-abstract class ComposeViewModel extends ChangeNotifier {
-  @override
-  void dispose() => super.dispose();
-}
+abstract class ComposeViewModel extends ChangeNotifier {}
 
 abstract class Serializable {
   Map<String, dynamic> toJson();

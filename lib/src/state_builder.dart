@@ -17,7 +17,7 @@ class _StateBuilderState<T> extends State<StateBuilder<T>> {
   @override
   void initState() {
     super.initState();
-    _currentValue = widget.state.value; // Initialize with current value
+    _currentValue = widget.state.value;
     widget.state.addListener(_update);
   }
 
@@ -25,11 +25,9 @@ class _StateBuilderState<T> extends State<StateBuilder<T>> {
   void didUpdateWidget(StateBuilder<T> oldWidget) {
     super.didUpdateWidget(oldWidget);
     if (oldWidget.state != widget.state) {
-      // If the state object changes, update listener
       oldWidget.state.removeListener(_update);
       widget.state.addListener(_update);
     }
-    // Sync current value on rebuild (e.g., hot reload)
     _currentValue = widget.state.value;
   }
 
@@ -42,7 +40,7 @@ class _StateBuilderState<T> extends State<StateBuilder<T>> {
   void _update() {
     if (mounted) {
       setState(() {
-        _currentValue = widget.state.value; // Update local value
+        _currentValue = widget.state.value;
       });
     }
   }

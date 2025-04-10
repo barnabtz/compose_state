@@ -15,9 +15,6 @@ class MutableState<T> extends ChangeNotifier {
   }
 
   void setValue(T newValue) => value = newValue;
-
-  @override
-  void dispose() => super.dispose();
 }
 
 MutableState<T> mutableStateOf<T>(T initialValue) => MutableState(initialValue);

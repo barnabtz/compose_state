@@ -59,12 +59,7 @@ void main() {
   });
 }
 
-class TestViewModel extends ComposeViewModel with Persistable {
-  @override
-  void dispose() {
-    super.dispose(); // Call super.dispose() for ChangeNotifier
-  }
-}
+class TestViewModel extends ComposeViewModel with Persistable {}
 
 class TestSerializable implements Serializable {
   final int value;
