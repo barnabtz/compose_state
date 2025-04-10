@@ -1,6 +1,7 @@
 export 'src/api_state.dart';
 export 'src/compose_view_model.dart';
 export 'src/derived_state.dart';
+export 'src/history_state.dart';
 export 'src/mutable_state.dart';
 export 'src/persistable_state.dart';
 export 'src/state_builder.dart';

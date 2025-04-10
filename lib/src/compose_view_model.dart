@@ -68,7 +68,7 @@ mixin Persistable on ComposeViewModel {
 
   Future<List<dynamic>> restoreDynamicList(String key, Map<String, Serializable Function(String)> typeRegistry) async {
     final List<dynamic>? raw = await restore(key);
-    if (raw == null) return [];
+    if (raw == null || raw.isEmpty) return [];
     return raw.map((item) {
       final type = item['type'] as String;
       final data = item['data'] as String;
