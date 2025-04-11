@@ -1,11 +1,12 @@
 import 'mutable_state.dart';
+import 'state_builder.dart';
 
 class DerivedState<T> {
   final T Function() _computation;
-  final MutableState<T> _state;
-  final List<MutableState> _dependencies;
+  final ObservableState<T> _state; // Changed from MutableState<T>
+  final List<ObservableState> _dependencies; // Changed from MutableState
 
-  DerivedState(this._computation, {List<MutableState>? dependencies})
+  DerivedState(this._computation, {List<ObservableState>? dependencies})
       : _state = mutableStateOf(_computation()),
         _dependencies = dependencies ?? [] {
     for (final dep in _dependencies) {
@@ -15,7 +16,7 @@ class DerivedState<T> {
 
   T get value => _state.value;
 
-  void _update() => _state.value = _computation();
+  void _update() => ( _state as MutableState<T>).value = _computation(); // Cast to MutableState for setter
 
   void dispose() {
     for (final dep in _dependencies) {
@@ -25,6 +26,6 @@ class DerivedState<T> {
   }
 }
 
-DerivedState<T> derivedStateOf<T>(T Function() computation, {List<MutableState>? dependencies}) {
+DerivedState<T> derivedStateOf<T>(T Function() computation, {List<ObservableState>? dependencies}) {
   return DerivedState(computation, dependencies: dependencies);
 }
