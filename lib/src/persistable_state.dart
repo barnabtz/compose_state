@@ -29,6 +29,7 @@ class PersistableState<T> extends ChangeNotifier implements ObservableState<T> {
   @override
   T get value => _state.value;
 
+  @override // Added annotation
   set value(T newValue) {
     _state.setValue(newValue);
     _debouncePersist();

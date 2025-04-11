@@ -20,6 +20,9 @@ class HistoryState<T> extends MutableState<T> implements ObservableState<T> {
     super.setValue(newValue);
   }
 
+  @override
+  set value(T newValue) => setValue(newValue); // Implement setter
+
   void undo() {
     if (_historyIndex > 0) {
       _historyIndex--;

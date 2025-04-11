@@ -9,6 +9,7 @@ class MutableState<T> extends ChangeNotifier implements ObservableState<T> {
   @override
   T get value => _value;
 
+  @override
   set value(T newValue) {
     if (!identical(_value, newValue)) {
       _value = newValue;
