@@ -1,4 +1,3 @@
-import 'package:flutter/foundation.dart';
 import 'mutable_state.dart';
 import 'state_builder.dart';
 
