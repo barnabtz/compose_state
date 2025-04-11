@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'mutable_state.dart';
 import 'state_builder.dart';
 
@@ -17,23 +18,25 @@ class HistoryState<T> extends MutableState<T> implements ObservableState<T> {
     }
     _history.add(newValue);
     _historyIndex++;
-    super.setValue(newValue);
+    super.value = newValue; // Directly set value, no recursion
   }
 
   @override
-  set value(T newValue) => setValue(newValue); // Implement setter
+  set value(T newValue) {
+    super.value = newValue; // Delegate to MutableState, no history logic here
+  }
 
   void undo() {
     if (_historyIndex > 0) {
       _historyIndex--;
-      super.setValue(_history[_historyIndex]);
+      super.value = _history[_historyIndex]; // Use super.value to avoid recursion
     }
   }
 
   void redo() {
     if (_historyIndex < _history.length - 1) {
       _historyIndex++;
-      super.setValue(_history[_historyIndex]);
+      super.value = _history[_historyIndex]; // Use super.value to avoid recursion
     }
   }
 }
