@@ -1,5 +1,5 @@
 import 'package:flutter/foundation.dart';
-import 'state_builder.dart';
+import 'observable_state.dart';
 
 class MutableState<T> extends ChangeNotifier implements ObservableState<T> {
   T _value;

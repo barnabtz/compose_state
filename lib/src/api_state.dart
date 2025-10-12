@@ -1,20 +1,27 @@
 import 'mutable_state.dart';
+import 'observable_state.dart';
 import 'ui_state.dart';
-import 'state_builder.dart';
 
 class ApiState<T> extends MutableState<UiState<T>> implements ObservableState<UiState<T>> {
   ApiState() : super(const Loading());
 
-  // Removed unnecessary override
-  // @override
-  // set value(UiState<T> newValue) => super.value = newValue;
-
-  Future<void> fetch(Future<T> Function() apiCall) async {
+  Future<void> fetch(
+    Future<T> Function() apiCall, {
+    int maxRetries = 0,
+    Duration retryDelay = const Duration(seconds: 1),
+  }) async {
     value = const Loading();
-    try {
-      value = Success(await apiCall());
-    } catch (e) {
-      value = Error(e.toString());
+    for (int attempt = 0; attempt <= maxRetries; attempt++) {
+      try {
+        value = Success(await apiCall());
+        return;
+      } catch (e) {
+        if (attempt == maxRetries) {
+          value = Error(e.toString());
+        } else {
+          await Future.delayed(retryDelay * (attempt + 1)); // Exponential backoff
+        }
+      }
     }
   }
 }

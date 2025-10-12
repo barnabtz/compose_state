@@ -1,4 +1,5 @@
 import 'package:flutter/widgets.dart';
+import 'observable_state.dart';
 import 'state_builder.dart';
 
 sealed class UiState<T> {
@@ -20,7 +21,7 @@ class Error<T> extends UiState<T> {
 }
 
 class UiStateBuilder<T> extends StatelessWidget {
-  final ObservableState<UiState<T>> state; // Changed from MutableState<UiState<T>>
+  final ObservableState<UiState<T>> state;
   final Widget Function(BuildContext) loading;
   final Widget Function(BuildContext, T) success;
   final Widget Function(BuildContext, String) error;

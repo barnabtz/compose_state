@@ -1,9 +1,5 @@
 import 'package:flutter/widgets.dart';
-
-abstract class ObservableState<T> extends ChangeNotifier {
-  T get value;
-  set value(T newValue); // Add setter to enforce mutability
-}
+import 'observable_state.dart';
 
 class StateBuilder<T> extends StatefulWidget {
   final ObservableState<T> state;

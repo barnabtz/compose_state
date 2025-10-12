@@ -1,9 +1,10 @@
 import 'mutable_state.dart';
-import 'state_builder.dart';
+import 'observable_state.dart';
 
 class HistoryState<T> extends MutableState<T> implements ObservableState<T> {
   final List<T> _history = [];
   int _historyIndex = -1;
+  bool _inSetValue = false; // Prevent recursion
 
   HistoryState(T initialValue) : super(initialValue) {
     _history.add(initialValue);
@@ -12,30 +13,40 @@ class HistoryState<T> extends MutableState<T> implements ObservableState<T> {
 
   @override
   void setValue(T newValue) {
-    if (_historyIndex < _history.length - 1) {
-      _history.removeRange(_historyIndex + 1, _history.length);
+    if (_inSetValue) return;
+    _inSetValue = true;
+    try {
+      if (_historyIndex < _history.length - 1) {
+        _history.removeRange(_historyIndex + 1, _history.length);
+      }
+      _history.add(newValue);
+      _historyIndex++;
+      super.value = newValue;
+    } finally {
+      _inSetValue = false;
     }
-    _history.add(newValue);
-    _historyIndex++;
-    super.value = newValue; // Directly set value, no recursion
   }
 
   @override
   set value(T newValue) {
-    super.value = newValue; // Delegate to MutableState, no history logic here
+    if (_inSetValue) {
+      super.value = newValue;
+    } else {
+      setValue(newValue);
+    }
   }
 
   void undo() {
     if (_historyIndex > 0) {
       _historyIndex--;
-      super.value = _history[_historyIndex]; // Use super.value to avoid recursion
+      super.value = _history[_historyIndex];
     }
   }
 
   void redo() {
     if (_historyIndex < _history.length - 1) {
       _historyIndex++;
-      super.value = _history[_historyIndex]; // Use super.value to avoid recursion
+      super.value = _history[_historyIndex];
     }
   }
 }

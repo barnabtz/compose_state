@@ -1,25 +1,19 @@
-# Compose State
+# compose_state
 
-A Flutter state management package inspired by Jetpack Compose, providing a reactive, declarative approach to UI state management with centralized ViewModel scoping, API integration, and persistence.
+A lightweight, reactive state management solution for Flutter inspired by Jetpack Compose.
 
 ## Features
-- **Reactive State**: `MutableState` and `StateBuilder` for real-time UI updates.
-- **Centralized Scoping**: `ViewModelScope` manages multiple ViewModels.
-- **State Hoisting**: Supports hoisting state to ViewModels or directly via `MutableState.setValue`.
-- **Derived State**: `DerivedState` for computed values.
-- **Stream Support**: `StreamState` for asynchronous data.
-- **UI States**: `UiState` with `Loading`, `Success`, and `Error`.
-- **API Handling**: `ApiState` for simplified API calls.
-- **Persistence**: `Persistable` mixin for storing data.
+- **MutableState**: Reactive state holder.
+- **PersistableState**: Built-in persistence with SharedPreferences.
+- **HistoryState**: Undo/redo support.
+- **ApiState**: Async data fetching with retry.
+- **DerivedState**: Reactive computed states.
+- **SignalState**: Granular reactivity.
+- **OfflinePersistableState**: Queued saves for offline use.
+- **StateBuilder & UiStateBuilder**: Targeted UI rebuilds.
+- **ViewModelScope**: MVVM state hoisting.
 
 ## Installation
-
-Add to your `pubspec.yaml`:
 ```yaml
 dependencies:
-  compose_state:
-    git:
-      url: https://github.com/barnabtz/state_compose.git
-      ref: main
-  
-  
+  compose_state: ^0.2.0

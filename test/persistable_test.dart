@@ -51,7 +51,10 @@ void main() {
       await vm.persist('key', data);
       final restored = await vm.restore<TestSerializable>(
         'key',
-        fromJson: (json) => TestSerializable.fromJson(jsonDecode(json) as Map<String, dynamic>),
+        fromJson:
+            (json) => TestSerializable.fromJson(
+              jsonDecode(json) as Map<String, dynamic>,
+            ),
       );
 
       expect(restored?.value, 100);
@@ -74,7 +77,8 @@ class TestSerializable implements Serializable {
   }
 
   @override
-  bool operator ==(Object other) => other is TestSerializable && value == other.value;
+  bool operator ==(Object other) =>
+      other is TestSerializable && value == other.value;
 
   @override
   int get hashCode => value.hashCode;

@@ -3,7 +3,7 @@ import 'package:flutter/foundation.dart';
 import 'compose_view_model.dart';
 import 'history_state.dart';
 import 'mutable_state.dart';
-import 'state_builder.dart';
+import 'observable_state.dart';
 
 class PersistableState<T> extends ChangeNotifier implements ObservableState<T> {
   final MutableState<T> _state;
@@ -29,7 +29,7 @@ class PersistableState<T> extends ChangeNotifier implements ObservableState<T> {
   @override
   T get value => _state.value;
 
-  @override // Added annotation
+  @override
   set value(T newValue) {
     _state.setValue(newValue);
     _debouncePersist();
