@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/scheduler.dart';
 
 /// Strategy for batching notifications.
@@ -131,7 +132,7 @@ class NotificationBatcher {
         notification();
       } catch (e) {
         // Log error but continue with other notifications
-        print('Error executing batched notification: $e');
+        debugPrint('Error executing batched notification: $e');
       }
     }
   }

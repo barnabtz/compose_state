@@ -50,9 +50,10 @@ void main() {
 
     test('test listener', () {
       final state = mutableStateOf(0);
-      final listener = StateTestUtils.createTestListener(state);
+      final listener = StateTestUtils.createTestListener<int>();
+      state.addListener(listener.createListener(state));
       
-      listener.startListening();
+      // Listener is already active
       
       state.value = 1;
       state.value = 2;

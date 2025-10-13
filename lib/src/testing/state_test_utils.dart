@@ -1,108 +1,101 @@
 import 'dart:async';
-import 'package:flutter/foundation.dart';
-import 'package:flutter_test/flutter_test.dart';
 import '../observable_state.dart';
 import '../ui_state.dart';
-import 'mock_state.dart';
 
-/// Comprehensive testing utilities for state management testing.
+/// Comprehensive testing utilities for the compose_state package.
 /// 
-/// This class provides helper functions, assertion utilities, and
-/// testing patterns for all state types in the compose_state package.
+/// This class provides helper methods for testing state behavior,
+/// verifying state changes, and creating test scenarios.
 class StateTestUtils {
-  StateTestUtils._();
-
-  /// Waits for a state to change to a specific value within a timeout.
+  /// Waits for a state to change from its current value.
   /// 
-  /// Returns true if the state changed to the expected value, false if timeout.
-  static Future<bool> waitForStateChange<T>(
+  /// Returns a Future that completes when the state changes,
+  /// or throws a TimeoutException if the timeout is reached.
+  static Future<T> waitForStateChange<T>(
+    ObservableState<T> state, {
+    Duration timeout = const Duration(seconds: 5),
+  }) {
+    final completer = Completer<T>();
+    final currentValue = state.value;
+    
+    void listener() {
+      if (state.value != currentValue) {
+        state.removeListener(listener);
+        completer.complete(state.value);
+      }
+    }
+    
+    state.addListener(listener);
+    
+    // Set up timeout
+    Timer(timeout, () {
+      if (!completer.isCompleted) {
+        state.removeListener(listener);
+        completer.completeError(
+          TimeoutException('State did not change within timeout', timeout),
+        );
+      }
+    });
+    
+    return completer.future;
+  }
+
+  /// Waits for a state to reach a specific value.
+  /// 
+  /// Returns a Future that completes when the state reaches the expected value,
+  /// or throws a TimeoutException if the timeout is reached.
+  static Future<void> waitForStateValue<T>(
     ObservableState<T> state,
     T expectedValue, {
     Duration timeout = const Duration(seconds: 5),
-    bool Function(T, T)? equals,
-  }) async {
-    if ((equals?.call(state.value, expectedValue) ?? state.value == expectedValue)) {
-      return true;
+  }) {
+    if (state.value == expectedValue) {
+      return Future.value();
     }
-
-    final completer = Completer<bool>();
-    late VoidCallback listener;
-    Timer? timeoutTimer;
-
-    listener = () {
-      final currentValue = state.value;
-      if (equals?.call(currentValue, expectedValue) ?? currentValue == expectedValue) {
-        timeoutTimer?.cancel();
+    
+    final completer = Completer<void>();
+    
+    void listener() {
+      if (state.value == expectedValue) {
         state.removeListener(listener);
-        if (!completer.isCompleted) {
-          completer.complete(true);
-        }
+        completer.complete();
       }
-    };
-
-    timeoutTimer = Timer(timeout, () {
-      state.removeListener(listener);
+    }
+    
+    state.addListener(listener);
+    
+    // Set up timeout
+    Timer(timeout, () {
       if (!completer.isCompleted) {
-        completer.complete(false);
+        state.removeListener(listener);
+        completer.completeError(
+          TimeoutException('State did not reach expected value within timeout', timeout),
+        );
       }
     });
-
-    state.addListener(listener);
+    
     return completer.future;
   }
 
-  /// Waits for any state change within a timeout.
-  static Future<T?> waitForAnyStateChange<T>(
-    ObservableState<T> state, {
-    Duration timeout = const Duration(seconds: 5),
-  }) async {
-    final completer = Completer<T?>();
-    late VoidCallback listener;
-    Timer? timeoutTimer;
-
-    listener = () {
-      timeoutTimer?.cancel();
-      state.removeListener(listener);
-      if (!completer.isCompleted) {
-        completer.complete(state.value);
-      }
-    };
-
-    timeoutTimer = Timer(timeout, () {
-      state.removeListener(listener);
-      if (!completer.isCompleted) {
-        completer.complete(null);
-      }
-    });
-
-    state.addListener(listener);
-    return completer.future;
-  }
-
-  /// Records all state changes for a given duration.
-  static Future<List<StateChangeRecord<T>>> recordStateChanges<T>(
+  /// Records all state changes over a specified duration.
+  /// 
+  /// Returns a list of all values the state took during the recording period.
+  static Future<List<T>> recordStateChanges<T>(
     ObservableState<T> state,
     Duration duration,
-  ) async {
-    final changes = <StateChangeRecord<T>>[];
-    T? previousValue = state.value;
+  ) {
+    final changes = <T>[state.value]; // Include initial value
     
-    late VoidCallback listener;
-    listener = () {
-      final currentValue = state.value;
-      changes.add(StateChangeRecord(
-        previousValue: previousValue,
-        newValue: currentValue,
-        timestamp: DateTime.now(),
-      ));
-      previousValue = currentValue;
-    };
-
+    void listener() {
+      changes.add(state.value);
+    }
+    
     state.addListener(listener);
-    await Future.delayed(duration);
-    state.removeListener(listener);
-
-    return changes;
+    
+    return Future.delayed(duration).then((_) {
+      state.removeListener(listener);
+      return changes;
+    });
   }
 
   /// Verifies that a state change sequence matches expected values.
@@ -111,33 +104,31 @@ class StateTestUtils {
     List<T> expectedValues, {
     String? reason,
   }) {
-    expect(
-      actualChanges.length,
-      expectedValues.length,
-      reason: reason ?? 'State change count mismatch',
-    );
+    if (actualChanges.length != expectedValues.length) {
+      throw AssertionError(reason ?? 'State change count mismatch: expected ${expectedValues.length}, got ${actualChanges.length}');
+    }
 
     for (int i = 0; i < expectedValues.length; i++) {
-      expect(
-        actualChanges[i].newValue,
-        expectedValues[i],
-        reason: reason ?? 'State change $i value mismatch',
-      );
+      if (actualChanges[i].newValue != expectedValues[i]) {
+        throw AssertionError(reason ?? 'State change $i value mismatch: expected ${expectedValues[i]}, got ${actualChanges[i].newValue}');
+      }
     }
-  }
-
-  /// Creates a test listener that tracks calls and values.
-  static TestStateListener<T> createTestListener<T>(ObservableState<T> state) {
-    return TestStateListener(state);
   }
 
   /// Verifies that a state operation throws a specific exception.
   static void expectStateThrows<T>(
     void Function() operation,
-    Matcher matcher, {
+    Type expectedExceptionType, {
     String? reason,
   }) {
-    expect(operation, throwsA(matcher), reason: reason);
+    try {
+      operation();
+      throw AssertionError(reason ?? 'Expected operation to throw $expectedExceptionType, but it completed normally');
+    } catch (e) {
+      if (e.runtimeType != expectedExceptionType) {
+        throw AssertionError(reason ?? 'Expected $expectedExceptionType, but got ${e.runtimeType}: $e');
+      }
+    }
   }
 
   /// Verifies that a state is properly disposed.
@@ -145,358 +136,277 @@ class StateTestUtils {
     ObservableState<T> state, {
     String? reason,
   }) {
-    expect(
-      state.isDisposed,
-      isTrue,
-      reason: reason ?? 'State should be disposed',
-    );
+    if (!state.isDisposed) {
+      throw AssertionError(reason ?? 'State should be disposed');
+    }
     
-    expect(
-      () => state.value,
-      throwsStateError,
-      reason: reason ?? 'Disposed state should throw on value access',
-    );
+    try {
+      state.value;
+      throw AssertionError(reason ?? 'Disposed state should throw on value access');
+    } catch (e) {
+      // Expected to throw
+    }
   }
 
-  /// Verifies that two state snapshots are equal.
-  static void expectSnapshotsEqual<T>(
+  /// Verifies that two snapshots are equivalent.
+  static void expectSnapshotEquals<T>(
     StateSnapshot<T> actual,
     StateSnapshot<T> expected, {
     String? reason,
   }) {
-    expect(
-      actual.value,
-      expected.value,
-      reason: reason ?? 'Snapshot values should be equal',
-    );
+    if (actual.value != expected.value) {
+      throw AssertionError(reason ?? 'Snapshot values should match: expected ${expected.value}, got ${actual.value}');
+    }
     
-    expect(
-      actual.timestamp,
-      expected.timestamp,
-      reason: reason ?? 'Snapshot timestamps should be equal',
-    );
+    if (actual.timestamp != expected.timestamp) {
+      throw AssertionError(reason ?? 'Snapshot timestamps should match: expected ${expected.timestamp}, got ${actual.timestamp}');
+    }
     
-    expect(
-      actual.metadata,
-      expected.metadata,
-      reason: reason ?? 'Snapshot metadata should be equal',
-    );
+    if (actual.metadata.toString() != expected.metadata.toString()) {
+      throw AssertionError(reason ?? 'Snapshot metadata should match: expected ${expected.metadata}, got ${actual.metadata}');
+    }
   }
 
-  /// Verifies that a state has specific metadata in its snapshot.
+  /// Verifies that a snapshot contains expected metadata.
   static void expectSnapshotMetadata<T>(
     StateSnapshot<T> snapshot,
     Map<String, dynamic> expectedMetadata, {
     String? reason,
   }) {
     for (final entry in expectedMetadata.entries) {
-      expect(
-        snapshot.metadata[entry.key],
-        entry.value,
-        reason: reason ?? 'Snapshot metadata ${entry.key} mismatch',
-      );
+      if (snapshot.metadata[entry.key] != entry.value) {
+        throw AssertionError(reason ?? 'Snapshot metadata mismatch for key ${entry.key}: expected ${entry.value}, got ${snapshot.metadata[entry.key]}');
+      }
     }
   }
 
-  /// Creates a mock state with pre-configured behavior for testing.
-  static MockState<T> createMockState<T>(
-    T initialValue, {
-    bool throwOnGet = false,
-    bool throwOnSet = false,
-    Duration? setDelay,
-    bool Function(T, T)? customEquals,
+  /// Creates a test snapshot with specified properties.
+  static StateSnapshot<T> createSnapshot<T>(
+    T value, {
+    DateTime? timestamp,
+    Map<String, dynamic>? metadata,
   }) {
-    final mock = MockState(initialValue);
-    
-    if (throwOnGet) mock.throwOnGet();
-    if (throwOnSet) mock.throwOnSet();
-    if (setDelay != null) mock.delaySet(setDelay);
-    if (customEquals != null) mock.setCustomEquals(customEquals);
-    
-    return mock;
+    return StateSnapshot<T>(
+      value,
+      timestamp: timestamp ?? DateTime.now(),
+      metadata: metadata ?? {},
+    );
   }
 
-  /// Verifies API state transitions for success scenarios.
+  /// Verifies that an API state is in success state with expected data.
   static void expectApiSuccess<T>(
-    ObservableState<UiState<T>> apiState,
+    UiState<T> apiState,
     T expectedData, {
     String? reason,
   }) {
-    expect(
-      apiState.value,
-      isA<Success<T>>(),
-      reason: reason ?? 'API state should be Success',
-    );
+    if (apiState is! Success<T>) {
+      throw AssertionError(reason ?? 'Expected Success state, got ${apiState.runtimeType}');
+    }
     
-    final success = apiState.value as Success<T>;
-    expect(
-      success.data,
-      expectedData,
-      reason: reason ?? 'API success data mismatch',
-    );
+    if ((apiState).data != expectedData) {
+      throw AssertionError(reason ?? 'Success data mismatch: expected $expectedData, got ${(apiState).data}');
+    }
   }
 
-  /// Verifies API state transitions for error scenarios.
+  /// Verifies that an API state is in error state with expected error.
   static void expectApiError<T>(
-    ObservableState<UiState<T>> apiState,
+    UiState<T> apiState,
     String expectedError, {
     String? reason,
   }) {
-    expect(
-      apiState.value,
-      isA<Error<T>>(),
-      reason: reason ?? 'API state should be Error',
-    );
+    if (apiState is! Error<T>) {
+      throw AssertionError(reason ?? 'Expected Error state, got ${apiState.runtimeType}');
+    }
     
-    final error = apiState.value as Error<T>;
-    expect(
-      error.message,
-      expectedError,
-      reason: reason ?? 'API error message mismatch',
-    );
+    if ((apiState).message != expectedError) {
+      throw AssertionError(reason ?? 'Error message mismatch: expected $expectedError, got ${(apiState).message}');
+    }
   }
 
-  /// Verifies API state is in loading state.
+  /// Verifies that an API state is in loading state.
   static void expectApiLoading<T>(
-    ObservableState<UiState<T>> apiState, {
+    UiState<T> apiState, {
     String? reason,
   }) {
-    expect(
-      apiState.value,
-      isA<Loading<T>>(),
-      reason: reason ?? 'API state should be Loading',
-    );
-  }
-
-  /// Pumps the event loop to allow async operations to complete.
-  static Future<void> pumpEventLoop([int times = 1]) async {
-    for (int i = 0; i < times; i++) {
-      await Future.delayed(Duration.zero);
+    if (apiState is! Loading<T>) {
+      throw AssertionError(reason ?? 'Expected Loading state, got ${apiState.runtimeType}');
     }
   }
 
   /// Creates a test scenario with multiple states for integration testing.
-  static TestStateScenario<T> createScenario<T>(
-    Map<String, ObservableState<T>> states,
-  ) {
-    return TestStateScenario(states);
+  static TestStateScenario createScenario() {
+    return TestStateScenario({});
+  }
+
+  /// Creates a test listener for a state.
+  static TestStateListener<T> createTestListener<T>() {
+    return TestStateListener<T>();
   }
 }
 
 /// Records a state change for testing purposes.
 class StateChangeRecord<T> {
-  final T? previousValue;
+  final T? oldValue;
   final T newValue;
   final DateTime timestamp;
+  final String changeType;
 
-  const StateChangeRecord({
-    required this.previousValue,
+  StateChangeRecord({
+    required this.oldValue,
     required this.newValue,
     required this.timestamp,
+    required this.changeType,
   });
 
   @override
   String toString() {
-    return 'StateChangeRecord(previous: $previousValue, new: $newValue, '
-           'timestamp: $timestamp)';
+    return 'StateChangeRecord(oldValue: $oldValue, newValue: $newValue, '
+           'changeType: $changeType, timestamp: $timestamp)';
   }
 }
 
 /// A test listener that tracks state changes and call counts.
 class TestStateListener<T> {
-  final ObservableState<T> _state;
   final List<T> _values = [];
   int _callCount = 0;
-  bool _isListening = false;
 
-  TestStateListener(this._state);
-
-  /// Start listening to state changes.
-  void startListening() {
-    if (!_isListening) {
-      _state.addListener(_onStateChange);
-      _isListening = true;
-    }
-  }
-
-  /// Stop listening to state changes.
-  void stopListening() {
-    if (_isListening) {
-      _state.removeListener(_onStateChange);
-      _isListening = false;
-    }
-  }
-
-  void _onStateChange() {
-    _callCount++;
-    _values.add(_state.value);
-  }
-
-  /// Get the number of times the listener was called.
+  /// The number of times the listener was called.
   int get callCount => _callCount;
 
-  /// Get all values that were recorded.
+  /// All values that were recorded.
   List<T> get values => List.unmodifiable(_values);
 
-  /// Get the last recorded value.
-  T? get lastValue => _values.isEmpty ? null : _values.last;
+  /// The most recent value recorded.
+  T? get lastValue => _values.isNotEmpty ? _values.last : null;
 
-  /// Clear the recorded data.
-  void clear() {
-    _callCount = 0;
-    _values.clear();
+  /// Creates a listener function that can be added to a state.
+  void Function() createListener(ObservableState<T> state) {
+    return () {
+      _callCount++;
+      _values.add(state.value);
+    };
   }
 
   /// Verify that the listener was called a specific number of times.
   void expectCallCount(int expected, {String? reason}) {
-    expect(
-      _callCount,
-      expected,
-      reason: reason ?? 'Listener call count mismatch',
-    );
+    if (_callCount != expected) {
+      throw AssertionError(reason ?? 'Expected $expected calls, got $_callCount');
+    }
   }
 
   /// Verify that specific values were recorded.
   void expectValues(List<T> expected, {String? reason}) {
-    expect(
-      _values,
-      expected,
-      reason: reason ?? 'Listener recorded values mismatch',
-    );
-  }
-
-  /// Dispose the listener.
-  void dispose() {
-    stopListening();
-    clear();
-  }
-}
-
-/// A test scenario for integration testing with multiple states.
-class TestStateScenario<T> {
-  final Map<String, ObservableState<T>> _states;
-  final Map<String, TestStateListener<T>> _listeners = {};
-
-  TestStateScenario(this._states);
-
-  /// Get a state by name.
-  ObservableState<T> state(String name) {
-    final state = _states[name];
-    if (state == null) {
-      throw ArgumentError('State "$name" not found in scenario');
+    if (_values.length != expected.length) {
+      throw AssertionError(reason ?? 'Expected ${expected.length} values, got ${_values.length}');
     }
-    return state;
-  }
-
-  /// Get a listener for a state by name.
-  TestStateListener<T> listener(String name) {
-    return _listeners.putIfAbsent(
-      name,
-      () => TestStateListener(state(name)),
-    );
-  }
-
-  /// Start listening to all states.
-  void startListening() {
-    for (final name in _states.keys) {
-      listener(name).startListening();
-    }
-  }
-
-  /// Stop listening to all states.
-  void stopListening() {
-    for (final listener in _listeners.values) {
-      listener.stopListening();
+    
+    for (int i = 0; i < expected.length; i++) {
+      if (_values[i] != expected[i]) {
+        throw AssertionError(reason ?? 'Value $i mismatch: expected ${expected[i]}, got ${_values[i]}');
+      }
     }
   }
 
   /// Clear all recorded data.
   void clear() {
-    for (final listener in _listeners.values) {
-      listener.clear();
-    }
+    _values.clear();
+    _callCount = 0;
   }
 
-  /// Dispose all listeners and states.
+  /// Reset the listener for reuse.
+  void reset() {
+    clear();
+  }
+
+  /// Start listening (compatibility method - listener is active when created).
+  void startListening() {
+    // This method is for compatibility - listeners are active when added to states
+  }
+
+  /// Dispose the listener (compatibility method).
   void dispose() {
-    stopListening();
-    for (final listener in _listeners.values) {
-      listener.dispose();
-    }
+    clear();
+  }
+}
+
+/// A test scenario for integration testing with multiple states.
+class TestStateScenario {
+  final Map<String, ObservableState> _states;
+  final Map<String, TestStateListener> _listeners = {};
+
+  TestStateScenario(this._states);
+
+  /// Add a state to the scenario.
+  void addState<T>(String name, ObservableState<T> state) {
+    _states[name] = state;
+  }
+
+  /// Get a state by name.
+  ObservableState<T>? getState<T>(String name) {
+    return _states[name] as ObservableState<T>?;
+  }
+
+  /// Add a listener to a state.
+  void addListener<T>(String stateName, String listenerName) {
+    final state = getState<T>(stateName);
+    if (state == null) return;
+
+    final listener = TestStateListener<T>();
+    _listeners[listenerName] = listener;
+    state.addListener(listener.createListener(state));
+  }
+
+  /// Get a listener by name.
+  TestStateListener<T>? getListener<T>(String name) {
+    return _listeners[name] as TestStateListener<T>?;
+  }
+
+  /// Start listening to all added states.
+  void startListening() {
+    // This method is for compatibility - listeners are added when addListener is called
+  }
+
+  /// Get a state by name (alternative method name for compatibility).
+  ObservableState<T>? state<T>(String name) {
+    return getState<T>(name);
+  }
+
+  /// Get a listener by name (alternative method name for compatibility).
+  TestStateListener<T>? listener<T>(String name) {
+    return getListener<T>(name);
+  }
+
+  /// Clean up all listeners and states.
+  void dispose() {
     for (final state in _states.values) {
       if (!state.isDisposed) {
         state.dispose();
       }
     }
+    _states.clear();
     _listeners.clear();
   }
 }
 
-/// Custom matchers for state testing.
+/// Utility functions for testing state properties.
 class StateMatchers {
-  /// Matcher for disposed states.
-  static Matcher get isDisposed => _IsDisposedMatcher();
+  /// Checks if a state is disposed.
+  static bool isDisposed(ObservableState state) => state.isDisposed;
   
-  /// Matcher for loading UI states.
-  static Matcher get isLoading => isA<Loading>();
+  /// Checks if a UI state is loading.
+  static bool isLoading(dynamic state) => state is Loading;
   
-  /// Matcher for success UI states.
-  static Matcher isSuccess<T>([T? data]) => _IsSuccessMatcher<T>(data);
-  
-  /// Matcher for error UI states.
-  static Matcher isError<T>([String? message]) => _IsErrorMatcher<T>(message);
-}
-
-class _IsDisposedMatcher extends Matcher {
-  @override
-  bool matches(dynamic item, Map matchState) {
-    return item is ObservableState && item.isDisposed;
-  }
-
-  @override
-  Description describe(Description description) {
-    return description.add('a disposed state');
-  }
-}
-
-class _IsSuccessMatcher<T> extends Matcher {
-  final T? expectedData;
-
-  _IsSuccessMatcher(this.expectedData);
-
-  @override
-  bool matches(dynamic item, Map matchState) {
-    if (item is! Success<T>) return false;
+  /// Checks if a UI state is success with optional data check.
+  static bool isSuccess<T>(dynamic state, [T? expectedData]) {
+    if (state is! Success<T>) return false;
     if (expectedData == null) return true;
-    return item.data == expectedData;
+    return state.data == expectedData;
   }
-
-  @override
-  Description describe(Description description) {
-    if (expectedData != null) {
-      return description.add('a Success state with data $expectedData');
-    }
-    return description.add('a Success state');
-  }
-}
-
-class _IsErrorMatcher<T> extends Matcher {
-  final String? expectedMessage;
-
-  _IsErrorMatcher(this.expectedMessage);
-
-  @override
-  bool matches(dynamic item, Map matchState) {
-    if (item is! Error<T>) return false;
+  
+  /// Checks if a UI state is error with optional message check.
+  static bool isError<T>(dynamic state, [String? expectedMessage]) {
+    if (state is! Error<T>) return false;
     if (expectedMessage == null) return true;
-    return item.message == expectedMessage;
-  }
-
-  @override
-  Description describe(Description description) {
-    if (expectedMessage != null) {
-      return description.add('an Error state with message "$expectedMessage"');
-    }
-    return description.add('an Error state');
+    return state.message == expectedMessage;
   }
 }

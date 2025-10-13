@@ -237,7 +237,7 @@ class TypeValidator {
     final typeString = T.toString();
     final isGeneric = typeString.contains('<') && typeString.contains('>');
     
-    List<Type> typeArguments = [];
+    final List<Type> typeArguments = [];
     if (isGeneric) {
       // This is a simplified approach - in practice, parsing generic types
       // from strings is complex and error-prone

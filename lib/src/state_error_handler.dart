@@ -1,6 +1,8 @@
 import 'dart:async';
 import 'dart:developer' as developer;
 
+import 'package:flutter/foundation.dart';
+
 import 'error_recovery_strategy.dart';
 import 'state_exceptions.dart';
 
@@ -191,7 +193,7 @@ class StateErrorHandler {
   /// Catches any exceptions and converts them to StateExceptions with context.
   Future<T> withErrorBoundary<T>(
     String operation,
-    Future<T> Function() operation_func, {
+    Future<T> Function() operationFunc, {
     String? stateKey,
     Type? valueType,
     Map<String, dynamic>? metadata,
@@ -204,7 +206,7 @@ class StateErrorHandler {
     );
 
     try {
-      return await operation_func();
+      return await operationFunc();
     } on StateException {
       rethrow; // Already a StateException, let it bubble up
     } catch (error, stackTrace) {
@@ -218,7 +220,7 @@ class StateErrorHandler {
   /// Synchronous version of withErrorBoundary.
   T withErrorBoundarySync<T>(
     String operation,
-    T Function() operation_func, {
+    T Function() operationFunc, {
     String? stateKey,
     Type? valueType,
     Map<String, dynamic>? metadata,
@@ -231,7 +233,7 @@ class StateErrorHandler {
     );
 
     try {
-      return operation_func();
+      return operationFunc();
     } on StateException {
       rethrow; // Already a StateException, let it bubble up
     } catch (error, stackTrace) {
@@ -395,7 +397,7 @@ class StateErrorHandler {
       }
     } catch (loggingError) {
       // Fallback to print if logging fails
-      print('StateErrorHandler: $message');
+      debugPrint('StateErrorHandler: $message');
     }
   }
 

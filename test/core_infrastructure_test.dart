@@ -61,7 +61,7 @@ void main() {
 
         // Should not detect leaks for new states
         final leaks = manager.detectPotentialLeaks(
-          threshold: Duration(seconds: 1),
+          threshold: const Duration(seconds: 1),
         );
         expect(leaks, isEmpty);
 
@@ -89,7 +89,7 @@ void main() {
 
     group('StateExceptions', () {
       test('StateSerializationException contains proper context', () {
-        final exception = StateSerializationException(
+        final exception = const StateSerializationException(
           'Failed to serialize',
           targetType: String,
           failedValue: 42,
@@ -103,7 +103,7 @@ void main() {
       });
 
       test('StatePersistenceException contains proper context', () {
-        final exception = StatePersistenceException(
+        final exception = const StatePersistenceException(
           'Failed to save',
           storageKey: 'user_data',
           operation: 'save',
@@ -115,7 +115,7 @@ void main() {
       });
 
       test('StateValidationException contains proper context', () {
-        final exception = StateValidationException(
+        final exception = const StateValidationException(
           'Invalid value',
           fieldName: 'age',
           violatedRule: 'must be positive',
@@ -131,7 +131,7 @@ void main() {
       });
 
       test('StateConsistencyException contains proper context', () {
-        final exception = StateConsistencyException(
+        final exception = const StateConsistencyException(
           'Consistency violation',
           involvedStates: ['state1', 'state2'],
           operation: 'transaction',

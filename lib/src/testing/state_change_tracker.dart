@@ -85,7 +85,7 @@ class StateChangeTracker {
     // Record initial value
     _recordChange(identifier, null, state.value, 'initial');
     
-    final listener = () => _recordChange(identifier, null, state.value, 'change');
+    void listener() => _recordChange(identifier, null, state.value, 'change');
     _listeners[identifier] = listener;
     state.addListener(listener);
   }

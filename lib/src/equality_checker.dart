@@ -181,7 +181,7 @@ class EqualityChecker<T> {
   String _generateCacheKey(T a, T b) {
     final hashA = _customHashCode?.call(a) ?? a.hashCode;
     final hashB = _customHashCode?.call(b) ?? b.hashCode;
-    return '${hashA}_${hashB}';
+    return '${hashA}_$hashB';
   }
 
   /// Caches the equality result with LRU eviction.

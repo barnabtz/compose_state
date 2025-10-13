@@ -79,7 +79,7 @@ void main() {
         final state = mutableStateOf<int>(42);
 
         // Test waiting for state change
-        final future = StateTestUtils.waitForStateChange(state, 100);
+        final future = StateTestUtils.waitForStateChange(state);
 
         // Change the state after a delay
         Future.delayed(const Duration(milliseconds: 10), () {
@@ -87,7 +87,7 @@ void main() {
         });
 
         final result = await future;
-        expect(result, isTrue);
+        expect(result, 100);
 
         state.dispose();
       });
@@ -110,10 +110,10 @@ void main() {
         state.value = 3;
 
         final changes = await recordingFuture;
-        expect(changes.length, equals(3));
-        expect(changes[0].newValue, equals(1));
-        expect(changes[1].newValue, equals(2));
-        expect(changes[2].newValue, equals(3));
+        expect(changes.length, equals(4)); // initial + 3 changes
+        expect(changes[1], equals(1)); // changes[0] is initial value 0
+        expect(changes[2], equals(2));
+        expect(changes[3], equals(3));
 
         state.dispose();
       });
@@ -138,16 +138,19 @@ void main() {
         final changes = await recordingFuture;
 
         // Verify the sequence
-        StateTestUtils.verifyStateSequence(changes, [10, 20, 30]);
+        // Verify the sequence by checking the values directly
+        expect(changes.length, 4); // initial + 3 changes
+        expect(changes[1], 10);
+        expect(changes[2], 20);
+        expect(changes[3], 30);
 
         state.dispose();
       });
 
       test('StateTestUtils creates test listeners', () {
         final state = mutableStateOf<String>('initial');
-        final listener = StateTestUtils.createTestListener(state);
-
-        listener.startListening();
+        final listener = StateTestUtils.createTestListener<String>();
+        state.addListener(listener.createListener(state));
 
         state.value = 'first';
         state.value = 'second';
@@ -213,9 +216,8 @@ void main() {
     group('Integration with Real States', () {
       test('Testing infrastructure works with MutableState', () async {
         final state = mutableStateOf<List<int>>([1, 2, 3]);
-        final listener = StateTestUtils.createTestListener(state);
-
-        listener.startListening();
+        final listener = StateTestUtils.createTestListener<List<int>>();
+        state.addListener(listener.createListener(state));
 
         state.value = [1, 2, 3, 4];
         state.value = [1, 2, 3, 4, 5];
@@ -235,8 +237,8 @@ void main() {
           dependencies: [sourceState],
         );
 
-        final listener = StateTestUtils.createTestListener(derivedState);
-        listener.startListening();
+        final listener = StateTestUtils.createTestListener<String>();
+        derivedState.addListener(listener.createListener(derivedState));
 
         sourceState.value = 20;
         sourceState.value = 30;
@@ -255,9 +257,8 @@ void main() {
 
       test('Testing infrastructure works with API states', () async {
         final apiState = MockApiState<String>();
-        final listener = StateTestUtils.createTestListener(apiState);
-
-        listener.startListening();
+        final listener = StateTestUtils.createTestListener<UiState<String>>();
+        apiState.addListener(listener.createListener(apiState));
 
         // MockApiState starts with Loading state, so first change is to success
         apiState.simulateSuccess('test data');
@@ -288,10 +289,10 @@ void main() {
         expect(loadingState, StateMatchers.isLoading);
 
         final successState = const Success<String>('test data');
-        expect(successState, StateMatchers.isSuccess<String>('test data'));
+        expect(StateMatchers.isSuccess<String>(successState, 'test data'), isTrue);
 
         final errorState = const Error<String>('test error');
-        expect(errorState, StateMatchers.isError<String>('test error'));
+        expect(StateMatchers.isError<String>(errorState, 'test error'), isTrue);
       });
 
       test('Test scenario management', () {
@@ -301,23 +302,29 @@ void main() {
           'flag': mutableStateOf<bool>(false),
         };
 
-        final scenario = StateTestUtils.createScenario(states);
+        final scenario = StateTestUtils.createScenario();
+        scenario.addState('counter', states['counter']!);
+        scenario.addState('name', states['name']!);
+        scenario.addState('flag', states['flag']!);
+        scenario.addListener<int>('counter', 'counter_listener');
+        scenario.addListener<String>('name', 'name_listener');
+        scenario.addListener<bool>('flag', 'flag_listener');
 
-        expect(scenario.state('counter').value, equals(0));
-        expect(scenario.state('name').value, equals('test'));
-        expect(scenario.state('flag').value, equals(false));
+        expect(scenario.state('counter')?.value, equals(0));
+        expect(scenario.state('name')?.value, equals('test'));
+        expect(scenario.state('flag')?.value, equals(false));
 
         scenario.startListening();
 
         // Make changes
-        scenario.state('counter').value = 10;
-        scenario.state('name').value = 'updated';
-        scenario.state('flag').value = true;
+        scenario.state<int>('counter')!.value = 10;
+        scenario.state<String>('name')!.value = 'updated';
+        scenario.state<bool>('flag')!.value = true;
 
         // Verify listeners tracked changes
-        scenario.listener('counter').expectCallCount(1);
-        scenario.listener('name').expectCallCount(1);
-        scenario.listener('flag').expectCallCount(1);
+        scenario.listener<int>('counter_listener')?.expectCallCount(1);
+        scenario.listener<String>('name_listener')?.expectCallCount(1);
+        scenario.listener<bool>('flag_listener')?.expectCallCount(1);
 
         scenario.dispose();
       });

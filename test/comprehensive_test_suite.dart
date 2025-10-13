@@ -21,7 +21,7 @@ void main() {
         
         errorHandler.addStrategy(fallbackStrategy);
         
-        final error = StatePersistenceException('Test error', storageKey: 'test');
+        const error = StatePersistenceException('Test error', storageKey: 'test');
         final context = ErrorContext(stateKey: 'test', operation: 'save');
         
         final result = await errorHandler.handleError<String>(
@@ -35,7 +35,7 @@ void main() {
 
       test('RetryStrategy respects max attempts', () async {
         final strategy = RetryStrategy(maxAttempts: 2);
-        final error = StatePersistenceException('Test error', storageKey: 'test');
+        final error = const StatePersistenceException('Test error', storageKey: 'test');
         final context = {'stateKey': 'test'};
         
         // First attempt should return retry
@@ -54,7 +54,7 @@ void main() {
 
       test('CircuitBreakerStrategy opens after threshold failures', () async {
         final strategy = CircuitBreakerStrategy(failureThreshold: 2);
-        final error = StateValidationException('Test error');
+        final error = const StateValidationException('Test error');
         
         expect(strategy.state, equals(CircuitState.closed));
         
@@ -72,7 +72,7 @@ void main() {
         strategy.setDefaultFallback<String>('fallback');
         strategy.setDefaultFallback<int>(42);
         
-        var result = await strategy.recover<String>(
+        final result = await strategy.recover<String>(
           const StateSerializationException('Test error'),
           null,
           {},
@@ -80,7 +80,7 @@ void main() {
         expect(result.isSuccess, isTrue);
         expect(result.value, equals('fallback'));
         
-        var intResult = await strategy.recover<int>(
+        final intResult = await strategy.recover<int>(
           const StateValidationException('Test error'),
           null,
           {},
@@ -105,7 +105,7 @@ void main() {
 
       test('Error statistics are tracked correctly', () async {
         final errorHandler = StateErrorHandler();
-        final error = StateValidationException('Test error');
+        final error = const StateValidationException('Test error');
         final context = ErrorContext(stateKey: 'test', operation: 'validate');
 
         try {
@@ -355,7 +355,7 @@ void main() {
         final state = mutableStateOf('initial');
         
         // Simulate error and recovery
-        final error = StateValidationException('Test error');
+        final error = const StateValidationException('Test error');
         final context = ErrorContext(stateKey: 'test', operation: 'validate');
         
         final recovered = await errorHandler.handleError<String>(

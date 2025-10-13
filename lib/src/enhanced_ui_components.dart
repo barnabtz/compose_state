@@ -669,11 +669,11 @@ Widget buildStateButton<T>(
     isEnabled: isEnabled,
     isLoading: isLoading,
     hasError: hasError,
-    child: child,
     onPressed: onPressed,
     loadingWidget: loadingWidget,
     errorWidget: errorWidget,
     style: style,
     errorHandler: errorHandler,
+    child: child,
   );
 }

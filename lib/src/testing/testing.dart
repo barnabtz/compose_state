@@ -1,4 +1,5 @@
 /// Comprehensive testing infrastructure for the compose_state package.
+library;
 /// 
 /// This module provides mock implementations, testing utilities, and
 /// verification mechanisms for all state types in the package.

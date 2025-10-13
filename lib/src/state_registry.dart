@@ -405,6 +405,7 @@ class StateMetadata {
   final Type type;
   
   /// Runtime type of the state implementation.
+  @override
   final Type runtimeType;
   
   /// When the state was created/registered.

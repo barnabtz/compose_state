@@ -8,7 +8,7 @@ void main() {
       final retryStrategy = RetryStrategy(maxAttempts: 2);
       errorHandler.addStrategy(retryStrategy);
 
-      final error = StatePersistenceException(
+      final error = const StatePersistenceException(
         'Test persistence error',
         operation: 'save',
         storageKey: 'test_key',
@@ -37,7 +37,7 @@ void main() {
       errorHandler.removeStrategy<FallbackStrategy>();
       errorHandler.removeStrategy<ResetStrategy>();
 
-      final error = StatePersistenceException(
+      final error = const StatePersistenceException(
         'Test persistence error',
         operation: 'save',
         storageKey: 'test_key',
@@ -60,7 +60,7 @@ void main() {
       final strategy = FallbackStrategy();
       strategy.setDefaultFallback<String>('default_value');
 
-      final error = StateSerializationException('Test error');
+      final error = const StateSerializationException('Test error');
       final result = await strategy.recover<String>(
         error,
         null,
@@ -73,7 +73,7 @@ void main() {
 
     test('RetryStrategy respects max attempts', () async {
       final strategy = RetryStrategy(maxAttempts: 2);
-      final error = StatePersistenceException('Test error', storageKey: 'test');
+      final error = const StatePersistenceException('Test error', storageKey: 'test');
 
       // First attempt should return retry
       var result = await strategy.recover<String>(
@@ -103,7 +103,7 @@ void main() {
 
     test('CircuitBreakerStrategy opens after threshold failures', () async {
       final strategy = CircuitBreakerStrategy(failureThreshold: 2);
-      final error = StateValidationException('Test error');
+      final error = const StateValidationException('Test error');
 
       expect(strategy.state, equals(CircuitState.closed));
 
@@ -132,7 +132,7 @@ void main() {
 
     test('Error statistics are tracked correctly', () async {
       final errorHandler = StateErrorHandler();
-      final error = StateValidationException('Test error');
+      final error = const StateValidationException('Test error');
       final context = ErrorContext(
         stateKey: 'test_state',
         operation: 'validate',
@@ -158,7 +158,7 @@ void main() {
       fallbackStrategy.setDefaultFallback<String>('fallback_value');
       errorHandler.addStrategy(fallbackStrategy);
 
-      final error = StateSerializationException('Test error');
+      final error = const StateSerializationException('Test error');
       final context = ErrorContext(
         stateKey: 'test_state',
         operation: 'serialize',
@@ -179,9 +179,9 @@ void main() {
       
       // Generate different types of errors
       final errors = [
-        StateSerializationException('Serialization failed'),
-        StatePersistenceException('Storage error', storageKey: 'test'),
-        StateValidationException('Invalid data'),
+        const StateSerializationException('Serialization failed'),
+        const StatePersistenceException('Storage error', storageKey: 'test'),
+        const StateValidationException('Invalid data'),
       ];
 
       for (final error in errors) {

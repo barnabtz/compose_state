@@ -7,7 +7,7 @@ extension TestStateBuilderFinder on WidgetTester {
   TestStateBuilderState<T>? findTestStateBuilder<T>() {
     final finder = find.byType(TestStateBuilder<T>);
     if (finder.evaluate().isEmpty) return null;
-    
+
     final element = finder.evaluate().first;
     return (element as StatefulElement).state as TestStateBuilderState<T>?;
   }
@@ -91,8 +91,8 @@ void main() {
           state.value = 42;
         });
 
-        final result = await StateTestUtils.waitForStateChange(state, 42);
-        expect(result, true);
+        final result = await StateTestUtils.waitForStateChange(state);
+        expect(result, 42);
       });
 
       test('record state changes', () async {
@@ -110,14 +110,15 @@ void main() {
         state.value = 2;
 
         final changes = await recordingFuture;
-        expect(changes.length, 2);
-        expect(changes[0].newValue, 1);
-        expect(changes[1].newValue, 2);
+        expect(changes.length, 3); // initial + 2 changes
+        expect(changes[1], 1); // changes[0] is initial value 0
+        expect(changes[2], 2);
       });
 
       test('test listener functionality', () {
         final state = mutableStateOf(0);
-        final listener = StateTestUtils.createTestListener(state);
+        final listener = StateTestUtils.createTestListener<int>();
+        state.addListener(listener.createListener(state));
 
         listener.startListening();
 
@@ -143,30 +144,31 @@ void main() {
         expect(state.isDisposed, isFalse);
 
         state.dispose();
-        expect(state, StateMatchers.isDisposed);
+        expect(StateMatchers.isDisposed(state), isTrue);
 
-        expect(apiState.value, StateMatchers.isSuccess('data'));
+        expect(StateMatchers.isSuccess(apiState.value, 'data'), isTrue);
 
         apiState.value = const Error('error');
-        expect(apiState.value, StateMatchers.isError('error'));
+        expect(StateMatchers.isError(apiState.value, 'error'), isTrue);
 
         apiState.value = const Loading();
-        expect(apiState.value, StateMatchers.isLoading);
+        expect(StateMatchers.isLoading(apiState.value), isTrue);
       });
 
       test('test scenario management', () {
-        final scenario = StateTestUtils.createScenario({
-          'counter': mutableStateOf(0),
-          'name': mutableStateOf('test'),
-        });
+        final scenario = StateTestUtils.createScenario();
+        scenario.addState('counter', mutableStateOf(0));
+        scenario.addState('name', mutableStateOf('test'));
+        scenario.addListener<int>('counter', 'counter_listener');
+        scenario.addListener<String>('name', 'name_listener');
 
         scenario.startListening();
 
-        scenario.state('counter').value = 1;
-        scenario.state('name').value = 'updated';
+        scenario.state('counter')!.value = 1;
+        scenario.state('name')!.value = 'updated';
 
-        expect(scenario.listener('counter').callCount, 1);
-        expect(scenario.listener('name').callCount, 1);
+        expect(scenario.listener<int>('counter_listener')?.callCount, 1);
+        expect(scenario.listener<String>('name_listener')?.callCount, 1);
 
         scenario.dispose();
       });
@@ -282,8 +284,11 @@ void main() {
 
         final builderState = tester.findTestStateBuilder<int>();
         expect(builderState?.stats.buildCount, 2); // initial + 1 update
-        expect(builderState?.changeHistory.map((e) => e.newValue).toList(), [0, 42]);
-        
+        expect(builderState?.changeHistory.map((e) => e.newValue).toList(), [
+          0,
+          42,
+        ]);
+
         // Clean up to prevent timer issues
         state.dispose();
         StateManager.instance.stop();
@@ -314,8 +319,11 @@ void main() {
 
         final builderState = tester.findTestStateBuilder<int>();
         expect(builderState?.buildHistory.any((e) => e.error != null), true);
-        expect(builderState?.buildHistory.where((e) => e.error != null).length, 1);
-        
+        expect(
+          builderState?.buildHistory.where((e) => e.error != null).length,
+          1,
+        );
+
         // Clean up to prevent timer issues
         state.dispose();
         StateManager.instance.stop();
@@ -376,9 +384,10 @@ void main() {
           history
               .map(
                 (e) => StateChangeRecord(
-                  previousValue: e.previousValue,
+                  oldValue: e.previousValue,
                   newValue: e.currentValue,
                   timestamp: e.timestamp,
+                  changeType: 'change',
                 ),
               )
               .toList(),
@@ -403,11 +412,11 @@ void main() {
         tracker.startTracking();
 
         // Set up listeners
-        final counterListener = StateTestUtils.createTestListener(counter);
-        final nameListener = StateTestUtils.createTestListener(name);
+        final counterListener = StateTestUtils.createTestListener<int>();
+        final nameListener = StateTestUtils.createTestListener<String>();
 
-        counterListener.startListening();
-        nameListener.startListening();
+        counter.addListener(counterListener.createListener(counter));
+        name.addListener(nameListener.createListener(name));
 
         // Perform operations
         counter.value = 1;
@@ -420,7 +429,7 @@ void main() {
         expect(tracker.getChangeCount('counter'), 2); // initial + 1 change
         expect(tracker.getChangeCount('name'), 2); // initial + 1 change
 
-        StateTestUtils.expectApiSuccess(apiState, 'api data');
+        StateTestUtils.expectApiSuccess(apiState.value, 'api data');
 
         // Clean up
         counterListener.dispose();

@@ -1,5 +1,7 @@
 import 'dart:async';
 
+import 'package:flutter/foundation.dart';
+
 import 'state_error_handler.dart';
 import 'state_exceptions.dart';
 
@@ -266,7 +268,7 @@ class GlobalErrorBoundary {
 
       // Log the error but don't attempt recovery for uncaught errors
       // Note: Using print as fallback since _log is private
-      print('StateErrorHandler: Uncaught state error: ${error.message}');
+      debugPrint('StateErrorHandler: Uncaught state error: ${error.message}');
       
       // Report error if reporting is enabled
       try {
@@ -275,7 +277,7 @@ class GlobalErrorBoundary {
           config.errorReporter!(error, errorContext.toMap());
         }
       } catch (reportingError) {
-        print('StateErrorHandler: Error reporting failed: $reportingError');
+        debugPrint('StateErrorHandler: Error reporting failed: $reportingError');
       }
     }
   }

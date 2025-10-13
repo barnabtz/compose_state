@@ -41,7 +41,7 @@ class GenericTypeHandler {
     final typeString = T.toString();
     final isGeneric = typeString.contains('<') && typeString.contains('>');
     
-    List<Type> typeArguments = [];
+    final List<Type> typeArguments = [];
     List<String> typeArgumentNames = [];
     
     if (isGeneric) {

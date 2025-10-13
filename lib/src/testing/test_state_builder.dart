@@ -227,7 +227,7 @@ class TestStateBuilderState<T> extends State<TestStateBuilder<T>> {
       if (_shouldThrowOnBuild) {
         _shouldThrowOnBuild = false;
         throw _buildException ??
-            StateValidationException('Test build exception');
+            const StateValidationException('Test build exception');
       }
 
       Widget result;

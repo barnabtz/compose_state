@@ -300,15 +300,15 @@ class _StateBuilderState<T> extends State<StateBuilder<T>> with ErrorBoundary {
         mainAxisSize: MainAxisSize.min,
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Row(
+          const Row(
             children: [
-              const Icon(
+              Icon(
                 Icons.error_outline,
                 color: Color(0xFFD32F2F),
                 size: 20,
               ),
-              const SizedBox(width: 8),
-              const Text(
+              SizedBox(width: 8),
+              Text(
                 'State Error',
                 style: TextStyle(
                   color: Color(0xFFD32F2F),
