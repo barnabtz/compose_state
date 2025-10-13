@@ -51,8 +51,10 @@ void main() {
       state.addListener(() => callCount++);
       state.dispose();
 
-      state.setValue(1);
+      // After disposal, the state should throw an error when accessed
+      expect(() => state.setValue(1), throwsA(isA<StateValidationException>()));
       expect(callCount, 0);
+      expect(state.isDisposed, true);
     });
   });
 }

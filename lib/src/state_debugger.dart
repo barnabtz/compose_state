@@ -9,7 +9,7 @@ class StateDebugger<T> implements ObservableState<T> {
 
   @override
   T get value {
-    debugPrint('[$_name] Get value: $_wrapped.value');
+    debugPrint('[$_name] Get value: ${_wrapped.value}');
     return _wrapped.value;
   }
 
@@ -20,16 +20,36 @@ class StateDebugger<T> implements ObservableState<T> {
   }
 
   @override
+  bool get isDisposed => _wrapped.isDisposed;
+
+  @override
   void addListener(VoidCallback listener) => _wrapped.addListener(listener);
 
   @override
   void removeListener(VoidCallback listener) => _wrapped.removeListener(listener);
 
+  @override
+  bool equals(T other) {
+    debugPrint('[$_name] Equals check: ${_wrapped.value} == $other');
+    return _wrapped.equals(other);
+  }
+
+  @override
+  StateSnapshot<T> createSnapshot() {
+    debugPrint('[$_name] Creating snapshot');
+    return _wrapped.createSnapshot();
+  }
+
+  @override
+  void restoreSnapshot(StateSnapshot<T> snapshot) {
+    debugPrint('[$_name] Restoring snapshot: ${snapshot.value}');
+    _wrapped.restoreSnapshot(snapshot);
+  }
+
+  @override
   void dispose() {
-    // Note: ObservableState doesn't define dispose, but wrapped implementations might
-    if (_wrapped is ChangeNotifier) {
-      (_wrapped as ChangeNotifier).dispose();
-    }
+    debugPrint('[$_name] Disposing state');
+    _wrapped.dispose();
   }
 }
 
