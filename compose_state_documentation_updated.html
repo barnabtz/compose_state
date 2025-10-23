@@ -1,0 +1,3218 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Compose State - Complete Documentation & Examples</title>
+
+  <!-- Prism.js CSS -->
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/themes/prism-tomorrow.min.css" rel="stylesheet" />
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/plugins/line-numbers/prism-line-numbers.min.css"
+    rel="stylesheet" />
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/plugins/toolbar/prism-toolbar.min.css"
+    rel="stylesheet" />
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      line-height: 1.6;
+      color: #333;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      min-height: 100vh;
+    }
+
+    .container {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 20px;
+      background: white;
+      margin-top: 20px;
+      margin-bottom: 20px;
+      border-radius: 15px;
+      box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+    }
+
+    .header {
+      text-align: center;
+      padding: 40px 0;
+      background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+      margin: -20px -20px 40px -20px;
+      border-radius: 15px 15px 0 0;
+      color: white;
+    }
+
+    .header h1 {
+      font-size: 3.5em;
+      margin-bottom: 10px;
+      text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
+    }
+
+    .header p {
+      font-size: 1.3em;
+      opacity: 0.9;
+    }
+
+    .nav {
+      background: #f8f9fa;
+      padding: 20px;
+      border-radius: 10px;
+      margin-bottom: 30px;
+      position: sticky;
+      top: 20px;
+      z-index: 100;
+    }
+
+    .nav ul {
+      list-style: none;
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      gap: 20px;
+    }
+
+    .nav a {
+      text-decoration: none;
+      color: #495057;
+      padding: 10px 20px;
+      border-radius: 25px;
+      transition: all 0.3s ease;
+      font-weight: 500;
+    }
+
+    .nav a:hover {
+      background: #007bff;
+      color: white;
+      transform: translateY(-2px);
+    }
+
+    .section {
+      margin-bottom: 50px;
+      padding: 30px;
+      background: #f8f9fa;
+      border-radius: 15px;
+      border-left: 5px solid #007bff;
+    }
+
+    .section h2 {
+      color: #007bff;
+      font-size: 2.5em;
+      margin-bottom: 20px;
+      display: flex;
+      align-items: center;
+      gap: 15px;
+    }
+
+    .section h3 {
+      color: #495057;
+      font-size: 1.8em;
+      margin: 30px 0 15px 0;
+      padding-bottom: 10px;
+      border-bottom: 2px solid #dee2e6;
+    }
+
+    /* Override Prism.js styles for better integration */
+    pre[class*="language-"] {
+      background: #2d3748 !important;
+      border-radius: 10px;
+      margin: 20px 0;
+      padding: 20px !important;
+      overflow: auto;
+      font-size: 14px;
+      line-height: 1.8;
+      tab-size: 2;
+      white-space: pre;
+    }
+
+    code[class*="language-"] {
+      background: transparent !important;
+      color: #e2e8f0 !important;
+      font-family: 'Fira Code', 'Consolas', 'Monaco', 'Courier New', monospace;
+      font-size: 14px;
+      line-height: 1.8;
+      white-space: pre;
+      tab-size: 2;
+    }
+
+    .line-numbers .line-numbers-rows {
+      background: #1a202c !important;
+      border-right: 1px solid #4a5568 !important;
+      border-radius: 10px 0 0 10px;
+    }
+
+    .line-numbers-rows>span:before {
+      color: #718096 !important;
+      font-size: 12px;
+    }
+
+    /* Toolbar styling */
+    div.code-toolbar {
+      position: relative;
+      margin: 20px 0;
+    }
+
+    div.code-toolbar>.toolbar {
+      position: absolute;
+      top: 10px;
+      right: 10px;
+      z-index: 10;
+    }
+
+    div.code-toolbar>.toolbar .toolbar-item button {
+      background: #4a5568 !important;
+      color: white !important;
+      border: none;
+      padding: 5px 10px;
+      border-radius: 5px;
+      cursor: pointer;
+      font-size: 12px;
+      transition: all 0.3s ease;
+    }
+
+    div.code-toolbar>.toolbar .toolbar-item button:hover {
+      background: #2d3748 !important;
+    }
+
+    /* Language label */
+    .code-block::before {
+      content: attr(data-lang);
+      position: absolute;
+      top: 10px;
+      right: 60px;
+      background: #4a5568;
+      color: #e2e8f0;
+      padding: 5px 10px;
+      border-radius: 5px;
+      font-size: 0.8em;
+      font-weight: bold;
+      z-index: 5;
+    }
+
+    /* Custom syntax highlighting for Dart */
+    .token.keyword {
+      color: #ff79c6 !important;
+      font-weight: bold;
+    }
+
+    .token.string {
+      color: #f1fa8c !important;
+    }
+
+    .token.comment {
+      color: #6272a4 !important;
+      font-style: italic;
+    }
+
+    .token.number {
+      color: #bd93f9 !important;
+    }
+
+    .token.class-name {
+      color: #8be9fd !important;
+    }
+
+    .token.function {
+      color: #50fa7b !important;
+    }
+
+    .token.operator {
+      color: #ff79c6 !important;
+    }
+
+    .token.punctuation {
+      color: #f8f8f2 !important;
+    }
+
+    .code-block::before {
+      content: attr(data-lang);
+      position: absolute;
+      top: 10px;
+      right: 15px;
+      background: #4a5568;
+      color: #e2e8f0;
+      padding: 5px 10px;
+      border-radius: 5px;
+      font-size: 0.8em;
+      font-weight: bold;
+    }
+
+    .highlight {
+      background: linear-gradient(120deg, #a8edea 0%, #fed6e3 100%);
+      padding: 20px;
+      border-radius: 10px;
+      margin: 20px 0;
+      border-left: 4px solid #17a2b8;
+    }
+
+    .feature-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+      gap: 25px;
+      margin: 30px 0;
+    }
+
+    .feature-card {
+      background: white;
+      padding: 25px;
+      border-radius: 15px;
+      box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+      transition: transform 0.3s ease;
+      border-top: 4px solid #007bff;
+    }
+
+    .feature-card:hover {
+      transform: translateY(-5px);
+    }
+
+    .feature-card h4 {
+      color: #007bff;
+      font-size: 1.4em;
+      margin-bottom: 15px;
+    }
+
+    .example-container {
+      background: white;
+      border-radius: 15px;
+      padding: 25px;
+      margin: 25px 0;
+      box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+    }
+
+    .example-title {
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      color: white;
+      padding: 15px 25px;
+      margin: -25px -25px 25px -25px;
+      border-radius: 15px 15px 0 0;
+      font-size: 1.3em;
+      font-weight: bold;
+    }
+
+    .complexity-badge {
+      display: inline-block;
+      padding: 5px 15px;
+      border-radius: 20px;
+      font-size: 0.9em;
+      font-weight: bold;
+      margin-left: 10px;
+    }
+
+    .simple {
+      background: #d4edda;
+      color: #155724;
+    }
+
+    .intermediate {
+      background: #fff3cd;
+      color: #856404;
+    }
+
+    .advanced {
+      background: #f8d7da;
+      color: #721c24;
+    }
+
+    .icon {
+      font-size: 1.5em;
+      margin-right: 10px;
+    }
+
+    @media (max-width: 768px) {
+      .container {
+        margin: 10px;
+        padding: 15px;
+      }
+
+      .header h1 {
+        font-size: 2.5em;
+      }
+
+      .nav ul {
+        flex-direction: column;
+        align-items: center;
+      }
+
+      .feature-grid {
+        grid-template-columns: 1fr;
+      }
+    }
+  </style>
+</head>
+
+<body>
+  <div class="container">
+    <div class="header">
+      <h1>🚀 Compose State</h1>
+      <p>Complete Documentation & Architecture Examples</p>
+      <p style="font-size: 1em; margin-top: 10px;">From Simple Counters to Complex Enterprise Applications</p>
+    </div>
+
+    <nav class="nav">
+      <ul>
+        <li><a href="#overview">📋 Overview</a></li>
+        <li><a href="#installation">📦 Installation</a></li>
+        <li><a href="#basic-examples">🎯 Basic Examples</a></li>
+        <li><a href="#intermediate-examples">⚡ Intermediate</a></li>
+        <li><a href="#advanced-examples">🏗️ Advanced</a></li>
+        <li><a href="#api-reference">📖 API Reference</a></li>
+        <li><a href="#best-practices">✨ Best Practices</a></li>
+      </ul>
+    </nav>
+    <section id="overview" class="section">
+      <h2><span class="icon">📋</span>Project Overview</h2>
+
+      <div class="highlight">
+        <strong>Compose State</strong> is a comprehensive Flutter state management package inspired by Jetpack Compose,
+        offering reactive state, centralized ViewModel scoping, API handling, and persistence for basic, complex,
+        and dynamic objects.
+      </div>
+
+      <h3>🌟 Key Features</h3>
+      <div class="feature-grid">
+        <div class="feature-card">
+          <h4>🔄 Reactive State Types</h4>
+          <p>MutableState, PersistableState, ApiState, DerivedState, HistoryState, StreamState, and SignalState for
+            every use case.</p>
+        </div>
+        <div class="feature-card">
+          <h4>🛡️ Error Handling</h4>
+          <p>Comprehensive error recovery strategies, retry mechanisms, and error boundaries with automatic fallbacks.
+          </p>
+        </div>
+        <div class="feature-card">
+          <h4>🧠 Memory Management</h4>
+          <p>Automatic disposal, weak reference tracking, and memory leak detection for optimal performance.</p>
+        </div>
+        <div class="feature-card">
+          <h4>⚡ Performance Optimization</h4>
+          <p>Deep equality checking, notification batching, and optimized rebuilds for smooth user experiences.</p>
+        </div>
+        <div class="feature-card">
+          <h4>🧪 Testing Infrastructure</h4>
+          <p>Mock implementations, state change tracking, and comprehensive testing utilities.</p>
+        </div>
+        <div class="feature-card">
+          <h4>🔒 Type Safety</h4>
+          <p>Runtime type validation for serialization and persistence operations with compile-time safety.</p>
+        </div>
+      </div>
+    </section>
+
+    <section id="installation" class="section">
+      <h2><span class="icon">📦</span>Installation & Setup</h2>
+
+      <h3>1. Add Dependency</h3>
+      <div class="code-block" data-lang="yaml">dependencies:
+        compose_state: ^0.1.0
+        flutter:
+        sdk: flutter</div>
+
+      <h3>2. Import Package</h3>
+      <div class="code-block" data-lang="dart">import 'package:compose_state/compose_state.dart';</div>
+
+      <h3>3. Basic Setup</h3>
+      <div class="code-block" data-lang="dart">void main() {
+        runApp(MyApp());
+        }
+
+        class MyApp extends StatelessWidget {
+        @override
+        Widget build(BuildContext context) {
+        return MaterialApp(
+        title: 'Compose State Demo',
+        home: MyHomePage(),
+        );
+        }
+        }</div>
+    </section>
+
+    <section id="basic-examples" class="section">
+      <h2><span class="icon">🎯</span>Basic Examples</h2>
+
+      <div class="example-container">
+        <div class="example-title">
+          Simple Counter App
+          <span class="complexity-badge simple">Simple</span>
+        </div>
+
+        <p>The classic counter example demonstrating basic reactive state management.</p>
+
+        <div class="code-block" data-lang="dart">import 'package:flutter/material.dart';
+          import 'package:compose_state/compose_state.dart';
+
+          // Create a reactive state
+          final counter = mutableStateOf(0);
+
+          class CounterApp extends StatelessWidget {
+          @override
+          Widget build(BuildContext context) {
+          home: Scaffold(
+          appBar: AppBar(
+          title: Text('Counter App'),
+          backgroundColor: Colors.blue,
+          ),
+          body: Center(
+          child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+          Text(
+          'You have pushed the button this many times:',
+          style: TextStyle(fontSize: 16),
+          ),
+          SizedBox(height: 20),
+          StateBuilder<int>(
+            state: counter,
+            builder: (context, count) {
+            return Text(
+            '$count',
+            style: Theme.of(context).textTheme.headlineMedium?.copyWith(
+            color: Colors.blue,
+            fontWeight: FontWeight.bold,
+            ),
+            );
+            },
+            ),
+            ],
+            ),
+            ),
+            floatingActionButton: Column(
+            mainAxisAlignment: MainAxisAlignment.end,
+            children: [
+            FloatingActionButton(
+            onPressed: () => counter.value++,
+            tooltip: 'Increment',
+            child: Icon(Icons.add),
+            ),
+            SizedBox(height: 10),
+            FloatingActionButton(
+            onPressed: () => counter.value--,
+            tooltip: 'Decrement',
+            child: Icon(Icons.remove),
+            ),
+            ],
+            ),
+            ),
+            );
+            }
+            }</div>
+
+        <div class="highlight">
+          <strong>Key Concepts:</strong>
+          <ul>
+            <li><code>mutableStateOf()</code> - Creates reactive state</li>
+            <li><code>StateBuilder</code> - Rebuilds UI when state changes</li>
+            <li>Automatic disposal and memory management</li>
+          </ul>
+        </div>
+      </div>
+      <div class="example-container">
+        <div class="example-title">
+          Persistent Settings with ViewModel
+          <span class="complexity-badge simple">Simple</span>
+        </div>
+
+        <p>Settings that automatically persist to device storage using the correct API with ViewModels.</p>
+
+        <div class="code-block" data-lang="dart">import 'package:flutter/material.dart';
+          import 'package:compose_state/compose_state.dart';
+
+          // Settings ViewModel with Persistable mixin
+          class SettingsViewModel extends ComposeViewModel with Persistable {
+          late final PersistableState<String> themeMode;
+            late final PersistableState<bool> notificationsEnabled;
+              late final PersistableState<double> fontSize;
+
+                SettingsViewModel() {
+                // Correct API: persistableState with fieldName and persistable parameters
+                themeMode = persistableState<String>(
+                  'system',
+                  fieldName: 'theme_mode',
+                  persistable: this,
+                  );
+
+                  notificationsEnabled = persistableState<bool>(
+                    true,
+                    fieldName: 'notifications_enabled',
+                    persistable: this,
+                    );
+
+                    fontSize = persistableState<double>(
+                      16.0,
+                      fieldName: 'font_size',
+                      persistable: this,
+                      );
+                      }
+                      }
+
+                      class SettingsPage extends StatelessWidget {
+                      @override
+                      Widget build(BuildContext context) {
+                      return ViewModelScope(
+                      viewModels: {
+                      SettingsViewModel: SettingsViewModel(),
+                      },
+                      child: Scaffold(
+                      appBar: AppBar(
+                      title: Text('Settings'),
+                      backgroundColor: Colors.deepPurple,
+                      ),
+                      body: Builder(
+                      builder: (context) {
+                      final viewModel = ViewModelScope.of<SettingsViewModel>(context);
+
+                        return Padding(
+                        padding: EdgeInsets.all(16.0),
+                        child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                        // Theme Mode Setting
+                        Text('Theme Mode', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+                        SizedBox(height: 8),
+                        StateBuilder<String>(
+                          state: viewModel.themeMode,
+                          builder: (context, mode) {
+                          return DropdownButtonFormField<String>(
+                            value: mode,
+                            decoration: InputDecoration(
+                            border: OutlineInputBorder(),
+                            contentPadding: EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                            ),
+                            onChanged: (newMode) => viewModel.themeMode.value = newMode!,
+                            items: [
+                            DropdownMenuItem(value: 'light', child: Text('Light')),
+                            DropdownMenuItem(value: 'dark', child: Text('Dark')),
+                            DropdownMenuItem(value: 'system', child: Text('System')),
+                            ],
+                            );
+                            },
+                            ),
+
+                            SizedBox(height: 24),
+
+                            // Notifications Setting
+                            StateBuilder<bool>(
+                              state: viewModel.notificationsEnabled,
+                              builder: (context, enabled) {
+                              return SwitchListTile(
+                              title: Text('Enable Notifications'),
+                              subtitle: Text('Receive push notifications'),
+                              value: enabled,
+                              onChanged: (value) => viewModel.notificationsEnabled.value = value,
+                              activeColor: Colors.deepPurple,
+                              );
+                              },
+                              ),
+
+                              SizedBox(height: 16),
+
+                              // Font Size Setting
+                              Text('Font Size', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+                              SizedBox(height: 8),
+                              StateBuilder<double>(
+                                state: viewModel.fontSize,
+                                builder: (context, size) {
+                                return Column(
+                                children: [
+                                Text(
+                                'Sample text with current font size',
+                                style: TextStyle(fontSize: size),
+                                ),
+                                SizedBox(height: 8),
+                                Slider(
+                                value: size,
+                                min: 12.0,
+                                max: 24.0,
+                                divisions: 12,
+                                label: '${size.round()}px',
+                                onChanged: (value) => viewModel.fontSize.value = value,
+                                activeColor: Colors.deepPurple,
+                                ),
+                                Text('${size.round()}px'),
+                                ],
+                                );
+                                },
+                                ),
+                                ],
+                                ),
+                                );
+                                },
+                                ),
+                                ),
+                                );
+                                }
+                                }</div>
+
+        <div class="highlight">
+          <strong>Key Features:</strong>
+          <ul>
+            <li><code>persistableState()</code> - Correct API with fieldName and persistable parameters</li>
+            <li><code>ComposeViewModel with Persistable</code> - Proper ViewModel pattern</li>
+            <li><code>ViewModelScope.of&lt;T&gt;(context)</code> - Type-safe ViewModel access</li>
+            <li>Automatic persistence to SharedPreferences</li>
+            <li>Type-safe serialization for different data types</li>
+            <li>Automatic debounced persistence for performance</li>
+          </ul>
+        </div>
+      </div>
+
+      <div class="example-container">
+        <div class="example-title">
+          Form Validation with Derived State
+          <span class="complexity-badge simple">Simple</span>
+        </div>
+
+        <p>Real-time form validation using derived state that automatically updates based on input changes.</p>
+
+        <div class="code-block" data-lang="dart">import 'package:flutter/material.dart';
+          import 'package:compose_state/compose_state.dart';
+
+          // Form field states
+          final email = mutableStateOf('');
+          final password = mutableStateOf('');
+          final confirmPassword = mutableStateOf('');
+
+          // Validation derived states with proper dependencies
+          final isEmailValid = derivedStateOf(() {
+          final emailRegex = RegExp(r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$');
+          return emailRegex.hasMatch(email.value);
+          }, dependencies: [email]);
+
+          final isPasswordValid = derivedStateOf(() {
+          return password.value.length >= 8;
+          }, dependencies: [password]);
+
+          final doPasswordsMatch = derivedStateOf(() {
+          return password.value == confirmPassword.value && confirmPassword.value.isNotEmpty;
+          }, dependencies: [password, confirmPassword]);
+
+          final isFormValid = derivedStateOf(() {
+          return isEmailValid.value && isPasswordValid.value && doPasswordsMatch.value;
+          }, dependencies: [isEmailValid, isPasswordValid, doPasswordsMatch]);
+
+          class RegistrationForm extends StatelessWidget {
+          @override
+          Widget build(BuildContext context) {
+          return Scaffold(
+          appBar: AppBar(
+          title: Text('Registration'),
+          backgroundColor: Colors.green,
+          ),
+          body: Padding(
+          padding: EdgeInsets.all(16.0),
+          child: Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+          // Email Field
+          StateBuilder<String>(
+            state: email,
+            builder: (context, emailValue) {
+            return StateBuilder<bool>(
+              state: isEmailValid,
+              builder: (context, isValid) {
+              return TextFormField(
+              decoration: InputDecoration(
+              labelText: 'Email',
+              border: OutlineInputBorder(),
+              suffixIcon: emailValue.isNotEmpty
+              ? Icon(
+              isValid ? Icons.check_circle : Icons.error,
+              color: isValid ? Colors.green : Colors.red,
+              )
+              : null,
+              errorText: emailValue.isNotEmpty && !isValid
+              ? 'Please enter a valid email'
+              : null,
+              ),
+              onChanged: (value) => email.value = value,
+              keyboardType: TextInputType.emailAddress,
+              );
+              },
+              );
+              },
+              ),
+
+              SizedBox(height: 16),
+
+              // Password Field
+              StateBuilder<String>(
+                state: password,
+                builder: (context, passwordValue) {
+                return StateBuilder<bool>(
+                  state: isPasswordValid,
+                  builder: (context, isValid) {
+                  return TextFormField(
+                  decoration: InputDecoration(
+                  labelText: 'Password',
+                  border: OutlineInputBorder(),
+                  suffixIcon: passwordValue.isNotEmpty
+                  ? Icon(
+                  isValid ? Icons.check_circle : Icons.error,
+                  color: isValid ? Colors.green : Colors.red,
+                  )
+                  : null,
+                  errorText: passwordValue.isNotEmpty && !isValid
+                  ? 'Password must be at least 8 characters'
+                  : null,
+                  ),
+                  onChanged: (value) => password.value = value,
+                  obscureText: true,
+                  );
+                  },
+                  );
+                  },
+                  ),
+
+                  SizedBox(height: 16),
+
+                  // Confirm Password Field
+                  StateBuilder<String>(
+                    state: confirmPassword,
+                    builder: (context, confirmValue) {
+                    return StateBuilder<bool>(
+                      state: doPasswordsMatch,
+                      builder: (context, doMatch) {
+                      return TextFormField(
+                      decoration: InputDecoration(
+                      labelText: 'Confirm Password',
+                      border: OutlineInputBorder(),
+                      suffixIcon: confirmValue.isNotEmpty
+                      ? Icon(
+                      doMatch ? Icons.check_circle : Icons.error,
+                      color: doMatch ? Colors.green : Colors.red,
+                      )
+                      : null,
+                      errorText: confirmValue.isNotEmpty && !doMatch
+                      ? 'Passwords do not match'
+                      : null,
+                      ),
+                      onChanged: (value) => confirmPassword.value = value,
+                      obscureText: true,
+                      );
+                      },
+                      );
+                      },
+                      ),
+
+                      SizedBox(height: 24),
+
+                      // Submit Button
+                      StateBuilder<bool>(
+                        state: isFormValid,
+                        builder: (context, isValid) {
+                        return ElevatedButton(
+                        onPressed: isValid ? _handleSubmit : null,
+                        style: ElevatedButton.styleFrom(
+                        backgroundColor: Colors.green,
+                        padding: EdgeInsets.symmetric(vertical: 16),
+                        ),
+                        child: Text(
+                        'Register',
+                        style: TextStyle(fontSize: 16, color: Colors.white),
+                        ),
+                        );
+                        },
+                        ),
+                        ],
+                        ),
+                        ),
+                        );
+                        }
+
+                        void _handleSubmit() {
+                        // Handle form submission
+                        print('Form submitted with email: ${email.value}');
+                        }
+                        }</div>
+
+        <div class="highlight">
+          <strong>Key Concepts:</strong>
+          <ul>
+            <li><code>derivedStateOf()</code> - Computed state with explicit dependencies</li>
+            <li><code>dependencies</code> parameter - Ensures proper reactivity</li>
+            <li>Real-time validation without manual state management</li>
+            <li>Reactive UI updates based on validation state</li>
+          </ul>
+        </div>
+      </div>
+    </section>
+    <section id="intermediate-examples" class="section">
+      <h2><span class="icon">⚡</span>Intermediate Examples</h2>
+
+      <div id="todo-app" class="example-container">
+        <div class="example-title">
+          Complete Todo Application
+          <span class="complexity-badge intermediate">Intermediate</span>
+        </div>
+
+        <p>A full-featured todo application demonstrating state management, persistence, and clean architecture
+          patterns.</p>
+
+        <div class="code-block" data-lang="dart">
+          import 'package:flutter/material.dart';
+          import 'package:compose_state/compose_state.dart';
+
+          // Todo model
+          class Todo {
+          final String id;
+          final String title;
+          final bool isCompleted;
+          final DateTime createdAt;
+
+          Todo({
+          required this.id,
+          required this.title,
+          this.isCompleted = false,
+          DateTime? createdAt,
+          }) : createdAt = createdAt ?? DateTime.now();
+
+          Todo copyWith({
+          String? id,
+          String? title,
+          bool? isCompleted,
+          DateTime? createdAt,
+          }) {
+          return Todo(
+          id: id ?? this.id,
+          title: title ?? this.title,
+          isCompleted: isCompleted ?? this.isCompleted,
+          createdAt: createdAt ?? this.createdAt,
+          );
+          }
+
+          Map<String, dynamic> toJson() {
+            return {
+            'id': id,
+            'title': title,
+            'isCompleted': isCompleted,
+            'createdAt': createdAt.toIso8601String(),
+            };
+            }
+
+            factory Todo.fromJson(Map<String, dynamic> json) {
+              return Todo(
+              id: json['id'],
+              title: json['title'],
+              isCompleted: json['isCompleted'],
+              createdAt: DateTime.parse(json['createdAt']),
+              );
+              }
+              }
+
+              // Todo ViewModel with persistence
+              class TodoViewModel extends ComposeViewModel with Persistable {
+              late final PersistableState<List<Todo>> todos;
+                late final MutableState<String> newTodoText;
+                  late final MutableState<String> filter;
+
+                    // Derived states for computed values
+                    late final DerivedState<List<Todo>> filteredTodos;
+                      late final DerivedState<int> completedCount;
+                        late final DerivedState<int> activeCount;
+
+                          TodoViewModel() {
+                          _initializeStates();
+                          }
+
+                          void _initializeStates() {
+                          // Persistent todo list - automatically saved to device
+                          todos = persistableState<List<Todo>>(
+                            [],
+                            fieldName: 'todos_list',
+                            persistable: this,
+                            );
+
+                            // Input and filter states
+                            newTodoText = mutableStateOf('');
+                            filter = mutableStateOf('all'); // all, active, completed
+
+                            // Computed states that update automatically
+                            filteredTodos = derivedStateOf(() {
+                            final allTodos = todos.value;
+                            switch (filter.value) {
+                            case 'active':
+                            return allTodos.where((todo) => !todo.isCompleted).toList();
+                            case 'completed':
+                            return allTodos.where((todo) => todo.isCompleted).toList();
+                            default:
+                            return allTodos;
+                            }
+                            }, dependencies: [todos, filter]);
+
+                            completedCount = derivedStateOf(() {
+                            return todos.value.where((todo) => todo.isCompleted).length;
+                            }, dependencies: [todos]);
+
+                            activeCount = derivedStateOf(() {
+                            return todos.value.where((todo) => !todo.isCompleted).length;
+                            }, dependencies: [todos]);
+                            }
+
+                            // Actions
+                            void addTodo() {
+                            final text = newTodoText.value.trim();
+                            if (text.isNotEmpty) {
+                            final newTodo = Todo(
+                            id: DateTime.now().millisecondsSinceEpoch.toString(),
+                            title: text,
+                            );
+
+                            todos.value = [...todos.value, newTodo];
+                            newTodoText.value = '';
+                            }
+                            }
+
+                            void toggleTodo(String id) {
+                            todos.value = todos.value.map((todo) {
+                            if (todo.id == id) {
+                            return todo.copyWith(isCompleted: !todo.isCompleted);
+                            }
+                            return todo;
+                            }).toList();
+                            }
+
+                            void deleteTodo(String id) {
+                            todos.value = todos.value.where((todo) => todo.id != id).toList();
+                            }
+
+                            void setFilter(String newFilter) {
+                            filter.value = newFilter;
+                            }
+
+                            void clearCompleted() {
+                            todos.value = todos.value.where((todo) => !todo.isCompleted).toList();
+                            }
+
+                            @override
+                            void dispose() {
+                            todos.dispose();
+                            newTodoText.dispose();
+                            filter.dispose();
+                            filteredTodos.dispose();
+                            completedCount.dispose();
+                            activeCount.dispose();
+                            super.dispose();
+                            }
+                            }
+
+                            // Main Todo App
+                            class TodoApp extends StatelessWidget {
+                            @override
+                            Widget build(BuildContext context) {
+                            return MaterialApp(
+                            title: 'Todo App',
+                            theme: ThemeData(primarySwatch: Colors.blue),
+                            home: ViewModelScope(
+                            viewModels: {
+                            TodoViewModel: TodoViewModel(),
+                            },
+                            child: TodoHomePage(),
+                            ),
+                            );
+                            }
+                            }
+
+                            class TodoHomePage extends StatelessWidget {
+                            @override
+                            Widget build(BuildContext context) {
+                            final viewModel = ViewModelScope.of<TodoViewModel>(context);
+
+                              return Scaffold(
+                              appBar: AppBar(
+                              title: Text('Todo App'),
+                              backgroundColor: Colors.blue,
+                              ),
+                              body: Column(
+                              children: [
+                              // Add todo input
+                              Padding(
+                              padding: EdgeInsets.all(16),
+                              child: Row(
+                              children: [
+                              Expanded(
+                              child: StateBuilder<String>(
+                                state: viewModel.newTodoText,
+                                builder: (context, text) {
+                                return TextField(
+                                decoration: InputDecoration(
+                                hintText: 'What needs to be done?',
+                                border: OutlineInputBorder(),
+                                ),
+                                onChanged: (value) => viewModel.newTodoText.value = value,
+                                onSubmitted: (_) => viewModel.addTodo(),
+                                );
+                                },
+                                ),
+                                ),
+                                SizedBox(width: 12),
+                                ElevatedButton(
+                                onPressed: viewModel.addTodo,
+                                child: Text('Add'),
+                                ),
+                                ],
+                                ),
+                                ),
+
+                                // Filter tabs
+                                Padding(
+                                padding: EdgeInsets.symmetric(horizontal: 16),
+                                child: StateBuilder<String>(
+                                  state: viewModel.filter,
+                                  builder: (context, currentFilter) {
+                                  return Row(
+                                  children: [
+                                  _FilterButton('All', 'all', currentFilter, viewModel.setFilter),
+                                  _FilterButton('Active', 'active', currentFilter, viewModel.setFilter),
+                                  _FilterButton('Completed', 'completed', currentFilter, viewModel.setFilter),
+                                  Spacer(),
+                                  StateBuilder<int>(
+                                    state: viewModel.activeCount,
+                                    builder: (context, count) {
+                                    return Text('$count items left');
+                                    },
+                                    ),
+                                    ],
+                                    );
+                                    },
+                                    ),
+                                    ),
+
+                                    // Todo list
+                                    Expanded(
+                                    child: StateBuilder<List<Todo>>(
+                                      state: viewModel.filteredTodos,
+                                      builder: (context, todos) {
+                                      if (todos.isEmpty) {
+                                      return Center(
+                                      child: Text(
+                                      'No todos yet!',
+                                      style: TextStyle(fontSize: 18, color: Colors.grey),
+                                      ),
+                                      );
+                                      }
+
+                                      return ListView.builder(
+                                      itemCount: todos.length,
+                                      itemBuilder: (context, index) {
+                                      final todo = todos[index];
+                                      return ListTile(
+                                      leading: Checkbox(
+                                      value: todo.isCompleted,
+                                      onChanged: (_) => viewModel.toggleTodo(todo.id),
+                                      ),
+                                      title: Text(
+                                      todo.title,
+                                      style: TextStyle(
+                                      decoration: todo.isCompleted
+                                      ? TextDecoration.lineThrough
+                                      : TextDecoration.none,
+                                      ),
+                                      ),
+                                      trailing: IconButton(
+                                      icon: Icon(Icons.delete, color: Colors.red),
+                                      onPressed: () => viewModel.deleteTodo(todo.id),
+                                      ),
+                                      );
+                                      },
+                                      );
+                                      },
+                                      ),
+                                      ),
+
+                                      // Clear completed button
+                                      StateBuilder<int>(
+                                        state: viewModel.completedCount,
+                                        builder: (context, completedCount) {
+                                        if (completedCount == 0) return SizedBox.shrink();
+
+                                        return Padding(
+                                        padding: EdgeInsets.all(16),
+                                        child: ElevatedButton(
+                                        onPressed: viewModel.clearCompleted,
+                                        child: Text('Clear Completed ($completedCount)'),
+                                        style: ElevatedButton.styleFrom(backgroundColor: Colors.red),
+                                        ),
+                                        );
+                                        },
+                                        ),
+                                        ],
+                                        ),
+                                        );
+                                        }
+                                        }
+
+                                        class _FilterButton extends StatelessWidget {
+                                        final String label;
+                                        final String value;
+                                        final String currentFilter;
+                                        final Function(String) onPressed;
+
+                                        const _FilterButton(this.label, this.value, this.currentFilter, this.onPressed);
+
+                                        @override
+                                        Widget build(BuildContext context) {
+                                        final isSelected = currentFilter == value;
+
+                                        return Padding(
+                                        padding: EdgeInsets.only(right: 8),
+                                        child: ElevatedButton(
+                                        onPressed: () => onPressed(value),
+                                        style: ElevatedButton.styleFrom(
+                                        backgroundColor: isSelected ? Colors.blue : Colors.grey[300],
+                                        foregroundColor: isSelected ? Colors.white : Colors.black,
+                                        ),
+                                        child: Text(label),
+                                        ),
+                                        );
+                                        }
+                                        }
+        </div>
+
+        <div class="highlight">
+          <strong>Todo App Features:</strong>
+          <ul>
+            <li><strong>Persistent Storage</strong> - Todos automatically saved and restored</li>
+            <li><strong>Reactive UI</strong> - Real-time updates with derived state</li>
+            <li><strong>Clean Architecture</strong> - Separation of business logic and UI</li>
+            <li><strong>Type Safety</strong> - Full compile-time type checking</li>
+            <li><strong>Memory Management</strong> - Automatic resource cleanup</li>
+            <li><strong>State Composition</strong> - Multiple state types working together</li>
+          </ul>
+        </div>
+      </div>
+
+      <div class="example-container"></div>
+      <div class="example-title">
+        API Integration with Error Handling
+        <span class="complexity-badge intermediate">Intermediate</span>
+      </div>
+
+      <p>Fetching data from APIs with comprehensive error handling, loading states, and retry mechanisms using the
+        correct API.</p>
+
+      <div class="code-block" data-lang="dart">import 'package:flutter/material.dart';
+        import 'package:compose_state/compose_state.dart';
+        import 'package:http/http.dart' as http;
+        import 'dart:convert';
+
+        // User model
+        class User {
+        final int id;
+        final String name;
+        final String email;
+        final String avatar;
+
+        User({required this.id, required this.name, required this.email, required this.avatar});
+
+        factory User.fromJson(Map<String, dynamic> json) {
+          return User(
+          id: json['id'],
+          name: json['name'],
+          email: json['email'],
+          avatar: json['avatar'] ?? 'https://via.placeholder.com/150',
+          );
+          }
+          }
+
+          // API Service
+          class ApiService {
+          static Future<List<User>> fetchUsers() async {
+            await Future.delayed(Duration(seconds: 2)); // Simulate network delay
+
+            final response = await http.get(
+            Uri.parse('https://jsonplaceholder.typicode.com/users'),
+            );
+
+            if (response.statusCode == 200) {
+            final List<dynamic> jsonList = json.decode(response.body);
+              return jsonList.map((json) => User.fromJson(json)).toList();
+              } else {
+              throw Exception('Failed to load users: ${response.statusCode}');
+              }
+              }
+              }
+
+              // API State with error handling - Correct API usage
+              final usersState = apiStateOf<List<User>>(
+                errorHandler: StateErrorHandler(
+                defaultStrategy: RetryStrategy(
+                maxAttempts: 3,
+                backoffMultiplier: 2.0,
+                ),
+                ),
+                );
+
+                class UserListPage extends StatefulWidget {
+                @override
+                _UserListPageState createState() => _UserListPageState();
+                }
+
+                class _UserListPageState extends State<UserListPage> {
+                  @override
+                  void initState() {
+                  super.initState();
+                  // Fetch data using the correct API
+                  usersState.fetch(() => ApiService.fetchUsers());
+                  }
+
+                  @override
+                  Widget build(BuildContext context) {
+                  return Scaffold(
+                  appBar: AppBar(
+                  title: Text('Users'),
+                  backgroundColor: Colors.orange,
+                  actions: [
+                  IconButton(
+                  icon: Icon(Icons.refresh),
+                  onPressed: () => usersState.fetch(() => ApiService.fetchUsers()),
+                  ),
+                  ],
+                  ),
+                  body: StateBuilder<UiState<List<User>>>(
+                    state: usersState,
+                    builder: (context, uiState) {
+                    // Loading State
+                    if (uiState is Loading) {
+                    return Center(
+                    child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                    CircularProgressIndicator(color: Colors.orange),
+                    SizedBox(height: 16),
+                    Text('Loading users...'),
+                    ],
+                    ),
+                    );
+                    }
+
+                    // Error State
+                    if (uiState is Error) {
+                    return Center(
+                    child: Padding(
+                    padding: EdgeInsets.all(16.0),
+                    child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                    Icon(Icons.error_outline, size: 64, color: Colors.red),
+                    SizedBox(height: 16),
+                    Text(
+                    'Error loading users',
+                    style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                    ),
+                    SizedBox(height: 8),
+                    Text(
+                    uiState.message,
+                    textAlign: TextAlign.center,
+                    style: TextStyle(color: Colors.grey[600]),
+                    ),
+                    SizedBox(height: 24),
+                    ElevatedButton.icon(
+                    onPressed: () => usersState.fetch(() => ApiService.fetchUsers()),
+                    icon: Icon(Icons.refresh),
+                    label: Text('Retry'),
+                    style: ElevatedButton.styleFrom(backgroundColor: Colors.orange),
+                    ),
+                    ],
+                    ),
+                    ),
+                    );
+                    }
+
+                    // Success State
+                    if (uiState is Success<List<User>>) {
+                      final users = uiState.data;
+                      return RefreshIndicator(
+                      onRefresh: () async => usersState.fetch(() => ApiService.fetchUsers()),
+                      child: ListView.builder(
+                      itemCount: users.length,
+                      itemBuilder: (context, index) {
+                      final user = users[index];
+                      return Card(
+                      margin: EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                      child: ListTile(
+                      leading: CircleAvatar(
+                      backgroundImage: NetworkImage(user.avatar),
+                      onBackgroundImageError: (_, __) => {},
+                      child: user.avatar.isEmpty ? Icon(Icons.person) : null,
+                      ),
+                      title: Text(
+                      user.name,
+                      style: TextStyle(fontWeight: FontWeight.bold),
+                      ),
+                      subtitle: Text(user.email),
+                      trailing: Icon(Icons.arrow_forward_ios),
+                      onTap: () {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(content: Text('Tapped on ${user.name}')),
+                      );
+                      },
+                      ),
+                      );
+                      },
+                      ),
+                      );
+                      }
+
+                      return Container(); // Fallback
+                      },
+                      ),
+                      );
+                      }
+                      }</div>
+
+      <div class="highlight">
+        <strong>Correct API Features:</strong>
+        <ul>
+          <li><code>apiStateOf()</code> - Creates API state with error handler</li>
+          <li><code>fetch()</code> method - Executes API calls with automatic retry</li>
+          <li><code>UiState&lt;T&gt;</code> - Proper state types (Loading, Success, Error)</li>
+          <li>Automatic retry mechanism with exponential backoff</li>
+          <li>Pull-to-refresh functionality</li>
+        </ul>
+      </div>
+  </div>
+  </section>
+
+  <section id="advanced-examples" class="section">
+    <h2><span class="icon">🏗️</span>Advanced Examples</h2>
+
+    <div id="clean-architecture-app" class="example-container">
+      <div class="example-title">
+        Clean Architecture with API Integration
+        <span class="complexity-badge advanced">Advanced</span>
+      </div>
+
+      <p>A complete application demonstrating clean architecture, dependency injection, API integration, and advanced
+        state management patterns.</p>
+
+      <div class="code-block" data-lang="dart">
+        // Domain Layer - Business Logic
+        abstract class Repository<T> {
+          Future<List<T>> getAll();
+            Future<T?> getById(String id);
+              Future<T> create(T entity);
+                Future<T> update(T entity);
+                  Future<void> delete(String id);
+                    }
+
+                    // User Entity
+                    class User {
+                    final String id;
+                    final String name;
+                    final String email;
+                    final String avatar;
+                    final DateTime createdAt;
+
+                    const User({
+                    required this.id,
+                    required this.name,
+                    required this.email,
+                    required this.avatar,
+                    required this.createdAt,
+                    });
+
+                    factory User.fromJson(Map<String, dynamic> json) {
+                      return User(
+                      id: json['id'].toString(),
+                      name: json['name'] ?? '',
+                      email: json['email'] ?? '',
+                      avatar: json['avatar'] ?? 'https://via.placeholder.com/150',
+                      createdAt: DateTime.tryParse(json['created_at'] ?? '') ?? DateTime.now(),
+                      );
+                      }
+
+                      Map<String, dynamic> toJson() {
+                        return {
+                        'id': id,
+                        'name': name,
+                        'email': email,
+                        'avatar': avatar,
+                        'created_at': createdAt.toIso8601String(),
+                        };
+                        }
+                        }
+
+                        // Data Layer - API Client
+                        class ApiClient {
+                        final String baseUrl;
+                        final Duration timeout;
+
+                        ApiClient({
+                        this.baseUrl = 'https://jsonplaceholder.typicode.com',
+                        this.timeout = const Duration(seconds: 30),
+                        });
+
+                        Future<List<T>> getList<T>(
+                            String endpoint,
+                            T Function(Map<String, dynamic>) fromJson,
+                              ) async {
+                              try {
+                              // Simulate API call
+                              await Future.delayed(Duration(seconds: 1));
+
+                              // Mock data for demonstration
+                              final mockData = List.generate(10, (index) => {
+                              'id': index + 1,
+                              'name': 'User ${index + 1}',
+                              'email': 'user${index + 1}@example.com',
+                              'avatar': 'https://via.placeholder.com/150',
+                              'created_at': DateTime.now().subtract(Duration(days: index)).toIso8601String(),
+                              });
+
+                              return mockData.map((json) => fromJson(json)).toList();
+                              } catch (e) {
+                              throw ApiException('Failed to fetch data: $e');
+                              }
+                              }
+
+                              Future<T> get<T>(
+                                  String endpoint,
+                                  T Function(Map<String, dynamic>) fromJson,
+                                    ) async {
+                                    try {
+                                    await Future.delayed(Duration(milliseconds: 500));
+
+                                    // Mock single user data
+                                    final mockData = {
+                                    'id': '1',
+                                    'name': 'John Doe',
+                                    'email': 'john@example.com',
+                                    'avatar': 'https://via.placeholder.com/150',
+                                    'created_at': DateTime.now().toIso8601String(),
+                                    };
+
+                                    return fromJson(mockData);
+                                    } catch (e) {
+                                    throw ApiException('Failed to fetch item: $e');
+                                    }
+                                    }
+
+                                    Future<T> post<T>(
+                                        String endpoint,
+                                        Map<String, dynamic> data,
+                                          T Function(Map<String, dynamic>) fromJson,
+                                            ) async {
+                                            try {
+                                            await Future.delayed(Duration(milliseconds: 800));
+
+                                            // Mock creation response
+                                            final responseData = {
+                                            ...data,
+                                            'id': DateTime.now().millisecondsSinceEpoch.toString(),
+                                            'created_at': DateTime.now().toIso8601String(),
+                                            };
+
+                                            return fromJson(responseData);
+                                            } catch (e) {
+                                            throw ApiException('Failed to create item: $e');
+                                            }
+                                            }
+                                            }
+
+                                            class ApiException implements Exception {
+                                            final String message;
+                                            ApiException(this.message);
+
+                                            @override
+                                            String toString() => 'ApiException: $message';
+                                            }
+
+                                            // Data Layer - Repository Implementation
+                                            class UserRepository implements Repository<User> {
+                                              final ApiClient _apiClient;
+                                              final CacheManager _cache;
+
+                                              UserRepository(this._apiClient, this._cache);
+
+                                              @override
+                                              Future<List<User>> getAll() async {
+                                                // Try cache first
+                                                final cached = await _cache.get<List<User>>('users');
+                                                  if (cached != null) return cached;
+
+                                                  // Fetch from API
+                                                  final users = await _apiClient.getList<User>('/users', User.fromJson);
+                                                    await _cache.set('users', users, duration: Duration(minutes: 5));
+                                                    return users;
+                                                    }
+
+                                                    @override
+                                                    Future<User?> getById(String id) async {
+                                                      final cached = await _cache.get<User>('user_$id');
+                                                        if (cached != null) return cached;
+
+                                                        final user = await _apiClient.get<User>('/users/$id',
+                                                          User.fromJson);
+                                                          await _cache.set('user_$id', user, duration: Duration(minutes:
+                                                          5));
+                                                          return user;
+                                                          }
+
+                                                          @override
+                                                          Future<User> create(User user) async {
+                                                            final created = await _apiClient.post<User>('/users',
+                                                              user.toJson(), User.fromJson);
+                                                              await _cache.invalidate('users'); // Invalidate list cache
+                                                              return created;
+                                                              }
+
+                                                              @override
+                                                              Future<User> update(User user) async {
+                                                                final updated = await _apiClient.post<User>
+                                                                  ('/users/${user.id}', user.toJson(), User.fromJson);
+                                                                  await _cache.invalidate('users');
+                                                                  await _cache.invalidate('user_${user.id}');
+                                                                  return updated;
+                                                                  }
+
+                                                                  @override
+                                                                  Future<void> delete(String id) async {
+                                                                    await Future.delayed(Duration(milliseconds: 500));
+                                                                    // Simulate API call
+                                                                    await _cache.invalidate('users');
+                                                                    await _cache.invalidate('user_$id');
+                                                                    }
+                                                                    }
+
+                                                                    // Simple Cache Manager
+                                                                    class CacheManager {
+                                                                    final Map<String, CacheEntry> _cache = {};
+
+                                                                      Future<T?> get<T>(String key) async {
+                                                                          final entry = _cache[key];
+                                                                          if (entry == null || entry.isExpired) {
+                                                                          _cache.remove(key);
+                                                                          return null;
+                                                                          }
+                                                                          return entry.value as T?;
+                                                                          }
+
+                                                                          Future<void> set<T>(String key, T value,
+                                                                              {Duration? duration}) async {
+                                                                              _cache[key] = CacheEntry(
+                                                                              value,
+                                                                              DateTime.now().add(duration ??
+                                                                              Duration(hours: 1)),
+                                                                              );
+                                                                              }
+
+                                                                              Future<void> invalidate(String key) async
+                                                                                {
+                                                                                _cache.remove(key);
+                                                                                }
+
+                                                                                Future<void> clear() async {
+                                                                                  _cache.clear();
+                                                                                  }
+                                                                                  }
+
+                                                                                  class CacheEntry {
+                                                                                  final dynamic value;
+                                                                                  final DateTime expiresAt;
+
+                                                                                  CacheEntry(this.value,
+                                                                                  this.expiresAt);
+
+                                                                                  bool get isExpired =>
+                                                                                  DateTime.now().isAfter(expiresAt);
+                                                                                  }
+
+                                                                                  // Application Layer - Use Cases
+                                                                                  class GetUsersUseCase {
+                                                                                  final UserRepository _repository;
+
+                                                                                  GetUsersUseCase(this._repository);
+
+                                                                                  Future<List<User>> execute({String?
+                                                                                    searchQuery}) async {
+                                                                                    final users = await
+                                                                                    _repository.getAll();
+
+                                                                                    if (searchQuery != null &&
+                                                                                    searchQuery.isNotEmpty) {
+                                                                                    return users.where((user) =>
+                                                                                    user.name.toLowerCase().contains(searchQuery.toLowerCase())
+                                                                                    ||
+                                                                                    user.email.toLowerCase().contains(searchQuery.toLowerCase())
+                                                                                    ).toList();
+                                                                                    }
+
+                                                                                    return users;
+                                                                                    }
+                                                                                    }
+
+                                                                                    class CreateUserUseCase {
+                                                                                    final UserRepository _repository;
+
+                                                                                    CreateUserUseCase(this._repository);
+
+                                                                                    Future<User> execute(String name,
+                                                                                      String email) async {
+                                                                                      // Validation
+                                                                                      if (name.trim().isEmpty) {
+                                                                                      throw ValidationException('Name
+                                                                                      cannot be empty');
+                                                                                      }
+
+                                                                                      if (!_isValidEmail(email)) {
+                                                                                      throw ValidationException('Invalid
+                                                                                      email format');
+                                                                                      }
+
+                                                                                      final user = User(
+                                                                                      id: '', // Will be set by API
+                                                                                      name: name.trim(),
+                                                                                      email: email.trim(),
+                                                                                      avatar:
+                                                                                      'https://via.placeholder.com/150',
+                                                                                      createdAt: DateTime.now(),
+                                                                                      );
+
+                                                                                      return await
+                                                                                      _repository.create(user);
+                                                                                      }
+
+                                                                                      bool _isValidEmail(String email) {
+                                                                                      return
+                                                                                      RegExp(r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$').hasMatch(email);
+                                                                                      }
+                                                                                      }
+
+                                                                                      class ValidationException
+                                                                                      implements Exception {
+                                                                                      final String message;
+                                                                                      ValidationException(this.message);
+
+                                                                                      @override
+                                                                                      String toString() =>
+                                                                                      'ValidationException: $message';
+                                                                                      }
+
+                                                                                      // Presentation Layer - ViewModel
+                                                                                      class UserListViewModel extends
+                                                                                      ComposeViewModel with Persistable
+                                                                                      {
+                                                                                      final GetUsersUseCase
+                                                                                      _getUsersUseCase;
+                                                                                      final CreateUserUseCase
+                                                                                      _createUserUseCase;
+
+                                                                                      // States
+                                                                                      late final ApiState<List<User>>
+                                                                                        usersState;
+                                                                                        late final MutableState<String>
+                                                                                          searchQuery;
+                                                                                          late final MutableState<bool>
+                                                                                            isCreatingUser;
+                                                                                            late final PersistableState
+                                                                                            <String> lastSearchQuery;
+
+                                                                                              // Derived states
+                                                                                              late final DerivedState
+                                                                                              <List<User>>
+                                                                                                filteredUsers;
+                                                                                                late final DerivedState
+                                                                                                <bool> hasUsers;
+                                                                                                  late final
+                                                                                                  DerivedState<String>
+                                                                                                    statusMessage;
+
+                                                                                                    UserListViewModel(this._getUsersUseCase,
+                                                                                                    this._createUserUseCase)
+                                                                                                    {
+                                                                                                    _initializeStates();
+                                                                                                    _loadUsers();
+                                                                                                    }
+
+                                                                                                    void
+                                                                                                    _initializeStates()
+                                                                                                    {
+                                                                                                    // API state for
+                                                                                                    users
+                                                                                                    usersState =
+                                                                                                    apiStateOf
+                                                                                                    <List<User>>(
+                                                                                                      errorHandler:
+                                                                                                      StateErrorHandler(
+                                                                                                      defaultStrategy:
+                                                                                                      RetryStrategy(maxAttempts:
+                                                                                                      3),
+                                                                                                      fallbackStrategy:
+                                                                                                      FallbackStrategy(fallbackValue:
+                                                                                                      <User>[]),
+                                                                                                        ),
+                                                                                                        );
+
+                                                                                                        // Search and UI
+                                                                                                        states
+                                                                                                        searchQuery =
+                                                                                                        mutableStateOf('');
+                                                                                                        isCreatingUser =
+                                                                                                        mutableStateOf(false);
+
+                                                                                                        // Persistent
+                                                                                                        search query
+                                                                                                        lastSearchQuery
+                                                                                                        =
+                                                                                                        persistableState
+                                                                                                        <String>(
+                                                                                                          '',
+                                                                                                          fieldName:
+                                                                                                          'last_search_query',
+                                                                                                          persistable:
+                                                                                                          this,
+                                                                                                          );
+
+                                                                                                          // Derived
+                                                                                                          states
+                                                                                                          filteredUsers
+                                                                                                          =
+                                                                                                          derivedStateOf(()
+                                                                                                          {
+                                                                                                          final users =
+                                                                                                          usersState.value;
+                                                                                                          if (users is!
+                                                                                                          Success
+                                                                                                          <List<User>>)
+                                                                                                            return
+                                                                                                            <User>[];
+
+                                                                                                              final
+                                                                                                              query =
+                                                                                                              searchQuery.value.toLowerCase();
+                                                                                                              if
+                                                                                                              (query.isEmpty)
+                                                                                                              return
+                                                                                                              users.data;
+
+                                                                                                              return
+                                                                                                              users.data.where((user)
+                                                                                                              =>
+                                                                                                              user.name.toLowerCase().contains(query)
+                                                                                                              ||
+                                                                                                              user.email.toLowerCase().contains(query)
+                                                                                                              ).toList();
+                                                                                                              },
+                                                                                                              dependencies:
+                                                                                                              [usersState,
+                                                                                                              searchQuery]);
+
+                                                                                                              hasUsers =
+                                                                                                              derivedStateOf(()
+                                                                                                              {
+                                                                                                              final
+                                                                                                              users =
+                                                                                                              usersState.value;
+                                                                                                              return
+                                                                                                              users is
+                                                                                                              Success
+                                                                                                              <List<User>
+                                                                                                                > &&
+                                                                                                                users.data.isNotEmpty;
+                                                                                                                },
+                                                                                                                dependencies:
+                                                                                                                [usersState]);
+
+                                                                                                                statusMessage
+                                                                                                                =
+                                                                                                                derivedStateOf(()
+                                                                                                                {
+                                                                                                                final
+                                                                                                                users =
+                                                                                                                usersState.value;
+                                                                                                                if
+                                                                                                                (users
+                                                                                                                is
+                                                                                                                Loading)
+                                                                                                                return
+                                                                                                                'Loading
+                                                                                                                users...';
+                                                                                                                if
+                                                                                                                (users
+                                                                                                                is
+                                                                                                                Error)
+                                                                                                                return
+                                                                                                                'Error:
+                                                                                                                ${users.message}';
+                                                                                                                if
+                                                                                                                (users
+                                                                                                                is
+                                                                                                                Success
+                                                                                                                <List<User>
+                                                                                                                  >) {
+                                                                                                                  final
+                                                                                                                  count
+                                                                                                                  =
+                                                                                                                  filteredUsers.value.length;
+                                                                                                                  return
+                                                                                                                  '$count
+                                                                                                                  user${count
+                                                                                                                  == 1 ?
+                                                                                                                  '' :
+                                                                                                                  's'}
+                                                                                                                  found';
+                                                                                                                  }
+                                                                                                                  return
+                                                                                                                  '';
+                                                                                                                  },
+                                                                                                                  dependencies:
+                                                                                                                  [usersState,
+                                                                                                                  filteredUsers]);
+                                                                                                                  }
+
+                                                                                                                  //
+                                                                                                                  Actions
+                                                                                                                  Future
+                                                                                                                  <void>
+                                                                                                                    _loadUsers()
+                                                                                                                    async
+                                                                                                                    {
+                                                                                                                    await
+                                                                                                                    usersState.fetch(()
+                                                                                                                    =>
+                                                                                                                    _getUsersUseCase.execute());
+                                                                                                                    }
+
+                                                                                                                    Future
+                                                                                                                    <void>
+                                                                                                                      refreshUsers()
+                                                                                                                      async
+                                                                                                                      {
+                                                                                                                      await
+                                                                                                                      usersState.fetch(()
+                                                                                                                      =>
+                                                                                                                      _getUsersUseCase.execute(
+                                                                                                                      searchQuery:
+                                                                                                                      searchQuery.value.isNotEmpty
+                                                                                                                      ?
+                                                                                                                      searchQuery.value
+                                                                                                                      :
+                                                                                                                      null,
+                                                                                                                      ));
+                                                                                                                      }
+
+                                                                                                                      void
+                                                                                                                      setSearchQuery(String
+                                                                                                                      query)
+                                                                                                                      {
+                                                                                                                      searchQuery.value
+                                                                                                                      =
+                                                                                                                      query;
+                                                                                                                      lastSearchQuery.value
+                                                                                                                      =
+                                                                                                                      query;
+                                                                                                                      }
+
+                                                                                                                      Future
+                                                                                                                      <void>
+                                                                                                                        createUser(String
+                                                                                                                        name,
+                                                                                                                        String
+                                                                                                                        email)
+                                                                                                                        async
+                                                                                                                        {
+                                                                                                                        isCreatingUser.value
+                                                                                                                        =
+                                                                                                                        true;
+
+                                                                                                                        try
+                                                                                                                        {
+                                                                                                                        await
+                                                                                                                        _createUserUseCase.execute(name,
+                                                                                                                        email);
+                                                                                                                        await
+                                                                                                                        refreshUsers();
+                                                                                                                        //
+                                                                                                                        Refresh
+                                                                                                                        the
+                                                                                                                        list
+                                                                                                                        }
+                                                                                                                        catch
+                                                                                                                        (error)
+                                                                                                                        {
+                                                                                                                        //
+                                                                                                                        Error
+                                                                                                                        handling
+                                                                                                                        would
+                                                                                                                        be
+                                                                                                                        done
+                                                                                                                        by
+                                                                                                                        the
+                                                                                                                        UI
+                                                                                                                        layer
+                                                                                                                        rethrow;
+                                                                                                                        }
+                                                                                                                        finally
+                                                                                                                        {
+                                                                                                                        isCreatingUser.value
+                                                                                                                        =
+                                                                                                                        false;
+                                                                                                                        }
+                                                                                                                        }
+
+                                                                                                                        @override
+                                                                                                                        void
+                                                                                                                        dispose()
+                                                                                                                        {
+                                                                                                                        usersState.dispose();
+                                                                                                                        searchQuery.dispose();
+                                                                                                                        isCreatingUser.dispose();
+                                                                                                                        lastSearchQuery.dispose();
+                                                                                                                        filteredUsers.dispose();
+                                                                                                                        hasUsers.dispose();
+                                                                                                                        statusMessage.dispose();
+                                                                                                                        super.dispose();
+                                                                                                                        }
+                                                                                                                        }
+
+                                                                                                                        //
+                                                                                                                        Dependency
+                                                                                                                        Injection
+                                                                                                                        Setup
+                                                                                                                        class
+                                                                                                                        AppDependencies
+                                                                                                                        {
+                                                                                                                        static
+                                                                                                                        late
+                                                                                                                        final
+                                                                                                                        ApiClient
+                                                                                                                        _apiClient;
+                                                                                                                        static
+                                                                                                                        late
+                                                                                                                        final
+                                                                                                                        CacheManager
+                                                                                                                        _cacheManager;
+                                                                                                                        static
+                                                                                                                        late
+                                                                                                                        final
+                                                                                                                        UserRepository
+                                                                                                                        _userRepository;
+                                                                                                                        static
+                                                                                                                        late
+                                                                                                                        final
+                                                                                                                        GetUsersUseCase
+                                                                                                                        _getUsersUseCase;
+                                                                                                                        static
+                                                                                                                        late
+                                                                                                                        final
+                                                                                                                        CreateUserUseCase
+                                                                                                                        _createUserUseCase;
+
+                                                                                                                        static
+                                                                                                                        void
+                                                                                                                        initialize()
+                                                                                                                        {
+                                                                                                                        _apiClient
+                                                                                                                        =
+                                                                                                                        ApiClient();
+                                                                                                                        _cacheManager
+                                                                                                                        =
+                                                                                                                        CacheManager();
+                                                                                                                        _userRepository
+                                                                                                                        =
+                                                                                                                        UserRepository(_apiClient,
+                                                                                                                        _cacheManager);
+                                                                                                                        _getUsersUseCase
+                                                                                                                        =
+                                                                                                                        GetUsersUseCase(_userRepository);
+                                                                                                                        _createUserUseCase
+                                                                                                                        =
+                                                                                                                        CreateUserUseCase(_userRepository);
+                                                                                                                        }
+
+                                                                                                                        static
+                                                                                                                        UserListViewModel
+                                                                                                                        createUserListViewModel()
+                                                                                                                        {
+                                                                                                                        return
+                                                                                                                        UserListViewModel(_getUsersUseCase,
+                                                                                                                        _createUserUseCase);
+                                                                                                                        }
+                                                                                                                        }
+
+                                                                                                                        //
+                                                                                                                        Main
+                                                                                                                        Application
+                                                                                                                        class
+                                                                                                                        CleanArchitectureApp
+                                                                                                                        extends
+                                                                                                                        StatelessWidget
+                                                                                                                        {
+                                                                                                                        @override
+                                                                                                                        Widget
+                                                                                                                        build(BuildContext
+                                                                                                                        context)
+                                                                                                                        {
+                                                                                                                        return
+                                                                                                                        MaterialApp(
+                                                                                                                        title:
+                                                                                                                        'Clean
+                                                                                                                        Architecture
+                                                                                                                        Demo',
+                                                                                                                        theme:
+                                                                                                                        ThemeData(
+                                                                                                                        primarySwatch:
+                                                                                                                        Colors.indigo,
+                                                                                                                        visualDensity:
+                                                                                                                        VisualDensity.adaptivePlatformDensity,
+                                                                                                                        ),
+                                                                                                                        home:
+                                                                                                                        ViewModelScope(
+                                                                                                                        viewModels:
+                                                                                                                        {
+                                                                                                                        UserListViewModel:
+                                                                                                                        AppDependencies.createUserListViewModel(),
+                                                                                                                        },
+                                                                                                                        child:
+                                                                                                                        UserListScreen(),
+                                                                                                                        ),
+                                                                                                                        );
+                                                                                                                        }
+                                                                                                                        }
+
+                                                                                                                        //
+                                                                                                                        UI
+                                                                                                                        Layer
+                                                                                                                        -
+                                                                                                                        Screen
+                                                                                                                        class
+                                                                                                                        UserListScreen
+                                                                                                                        extends
+                                                                                                                        StatelessWidget
+                                                                                                                        {
+                                                                                                                        @override
+                                                                                                                        Widget
+                                                                                                                        build(BuildContext
+                                                                                                                        context)
+                                                                                                                        {
+                                                                                                                        final
+                                                                                                                        viewModel
+                                                                                                                        =
+                                                                                                                        ViewModelScope.of
+                                                                                                                        <UserListViewModel>
+                                                                                                                          (context);
+
+                                                                                                                          return
+                                                                                                                          Scaffold(
+                                                                                                                          appBar:
+                                                                                                                          AppBar(
+                                                                                                                          title:
+                                                                                                                          Text('Users'),
+                                                                                                                          backgroundColor:
+                                                                                                                          Colors.indigo,
+                                                                                                                          actions:
+                                                                                                                          [
+                                                                                                                          IconButton(
+                                                                                                                          icon:
+                                                                                                                          Icon(Icons.refresh),
+                                                                                                                          onPressed:
+                                                                                                                          ()
+                                                                                                                          =>
+                                                                                                                          viewModel.refreshUsers(),
+                                                                                                                          ),
+                                                                                                                          ],
+                                                                                                                          ),
+                                                                                                                          body:
+                                                                                                                          Column(
+                                                                                                                          children:
+                                                                                                                          [
+                                                                                                                          //
+                                                                                                                          Search
+                                                                                                                          bar
+                                                                                                                          Padding(
+                                                                                                                          padding:
+                                                                                                                          EdgeInsets.all(16),
+                                                                                                                          child:
+                                                                                                                          StateBuilder
+                                                                                                                          <String>
+                                                                                                                            (
+                                                                                                                            state:
+                                                                                                                            viewModel.searchQuery,
+                                                                                                                            builder:
+                                                                                                                            (context,
+                                                                                                                            query)
+                                                                                                                            {
+                                                                                                                            return
+                                                                                                                            TextField(
+                                                                                                                            decoration:
+                                                                                                                            InputDecoration(
+                                                                                                                            hintText:
+                                                                                                                            'Search
+                                                                                                                            users...',
+                                                                                                                            prefixIcon:
+                                                                                                                            Icon(Icons.search),
+                                                                                                                            border:
+                                                                                                                            OutlineInputBorder(
+                                                                                                                            borderRadius:
+                                                                                                                            BorderRadius.circular(10),
+                                                                                                                            ),
+                                                                                                                            ),
+                                                                                                                            onChanged:
+                                                                                                                            viewModel.setSearchQuery,
+                                                                                                                            );
+                                                                                                                            },
+                                                                                                                            ),
+                                                                                                                            ),
+
+                                                                                                                            //
+                                                                                                                            Status
+                                                                                                                            message
+                                                                                                                            StateBuilder
+                                                                                                                            <String>
+                                                                                                                              (
+                                                                                                                              state:
+                                                                                                                              viewModel.statusMessage,
+                                                                                                                              builder:
+                                                                                                                              (context,
+                                                                                                                              message)
+                                                                                                                              {
+                                                                                                                              return
+                                                                                                                              Padding(
+                                                                                                                              padding:
+                                                                                                                              EdgeInsets.symmetric(horizontal:
+                                                                                                                              16),
+                                                                                                                              child:
+                                                                                                                              Text(
+                                                                                                                              message,
+                                                                                                                              style:
+                                                                                                                              TextStyle(color:
+                                                                                                                              Colors.grey[600]),
+                                                                                                                              ),
+                                                                                                                              );
+                                                                                                                              },
+                                                                                                                              ),
+
+                                                                                                                              //
+                                                                                                                              User
+                                                                                                                              list
+                                                                                                                              Expanded(
+                                                                                                                              child:
+                                                                                                                              StateBuilder
+                                                                                                                              <List<User>
+                                                                                                                                >(
+                                                                                                                                state:
+                                                                                                                                viewModel.filteredUsers,
+                                                                                                                                builder:
+                                                                                                                                (context,
+                                                                                                                                users)
+                                                                                                                                {
+                                                                                                                                if
+                                                                                                                                (users.isEmpty)
+                                                                                                                                {
+                                                                                                                                return
+                                                                                                                                Center(
+                                                                                                                                child:
+                                                                                                                                Column(
+                                                                                                                                mainAxisAlignment:
+                                                                                                                                MainAxisAlignment.center,
+                                                                                                                                children:
+                                                                                                                                [
+                                                                                                                                Icon(Icons.people_outline,
+                                                                                                                                size:
+                                                                                                                                64,
+                                                                                                                                color:
+                                                                                                                                Colors.grey),
+                                                                                                                                SizedBox(height:
+                                                                                                                                16),
+                                                                                                                                Text('No
+                                                                                                                                users
+                                                                                                                                found'),
+                                                                                                                                ],
+                                                                                                                                ),
+                                                                                                                                );
+                                                                                                                                }
+
+                                                                                                                                return
+                                                                                                                                ListView.builder(
+                                                                                                                                itemCount:
+                                                                                                                                users.length,
+                                                                                                                                itemBuilder:
+                                                                                                                                (context,
+                                                                                                                                index)
+                                                                                                                                {
+                                                                                                                                final
+                                                                                                                                user
+                                                                                                                                =
+                                                                                                                                users[index];
+                                                                                                                                return
+                                                                                                                                Card(
+                                                                                                                                margin:
+                                                                                                                                EdgeInsets.symmetric(horizontal:
+                                                                                                                                16,
+                                                                                                                                vertical:
+                                                                                                                                4),
+                                                                                                                                child:
+                                                                                                                                ListTile(
+                                                                                                                                leading:
+                                                                                                                                CircleAvatar(
+                                                                                                                                backgroundImage:
+                                                                                                                                NetworkImage(user.avatar),
+                                                                                                                                ),
+                                                                                                                                title:
+                                                                                                                                Text(user.name),
+                                                                                                                                subtitle:
+                                                                                                                                Text(user.email),
+                                                                                                                                trailing:
+                                                                                                                                Text(
+                                                                                                                                '${user.createdAt.day}/${user.createdAt.month}/${user.createdAt.year}',
+                                                                                                                                style:
+                                                                                                                                TextStyle(fontSize:
+                                                                                                                                12,
+                                                                                                                                color:
+                                                                                                                                Colors.grey),
+                                                                                                                                ),
+                                                                                                                                ),
+                                                                                                                                );
+                                                                                                                                },
+                                                                                                                                );
+                                                                                                                                },
+                                                                                                                                ),
+                                                                                                                                ),
+                                                                                                                                ],
+                                                                                                                                ),
+                                                                                                                                floatingActionButton:
+                                                                                                                                StateBuilder
+                                                                                                                                <bool>
+                                                                                                                                  (
+                                                                                                                                  state:
+                                                                                                                                  viewModel.isCreatingUser,
+                                                                                                                                  builder:
+                                                                                                                                  (context,
+                                                                                                                                  isCreating)
+                                                                                                                                  {
+                                                                                                                                  return
+                                                                                                                                  FloatingActionButton(
+                                                                                                                                  onPressed:
+                                                                                                                                  isCreating
+                                                                                                                                  ?
+                                                                                                                                  null
+                                                                                                                                  :
+                                                                                                                                  ()
+                                                                                                                                  =>
+                                                                                                                                  _showCreateUserDialog(context,
+                                                                                                                                  viewModel),
+                                                                                                                                  backgroundColor:
+                                                                                                                                  isCreating
+                                                                                                                                  ?
+                                                                                                                                  Colors.grey
+                                                                                                                                  :
+                                                                                                                                  Colors.indigo,
+                                                                                                                                  child:
+                                                                                                                                  isCreating
+                                                                                                                                  ?
+                                                                                                                                  SizedBox(
+                                                                                                                                  width:
+                                                                                                                                  20,
+                                                                                                                                  height:
+                                                                                                                                  20,
+                                                                                                                                  child:
+                                                                                                                                  CircularProgressIndicator(color:
+                                                                                                                                  Colors.white,
+                                                                                                                                  strokeWidth:
+                                                                                                                                  2),
+                                                                                                                                  )
+                                                                                                                                  :
+                                                                                                                                  Icon(Icons.add),
+                                                                                                                                  );
+                                                                                                                                  },
+                                                                                                                                  ),
+                                                                                                                                  );
+                                                                                                                                  }
+
+                                                                                                                                  void
+                                                                                                                                  _showCreateUserDialog(BuildContext
+                                                                                                                                  context,
+                                                                                                                                  UserListViewModel
+                                                                                                                                  viewModel)
+                                                                                                                                  {
+                                                                                                                                  final
+                                                                                                                                  nameController
+                                                                                                                                  =
+                                                                                                                                  TextEditingController();
+                                                                                                                                  final
+                                                                                                                                  emailController
+                                                                                                                                  =
+                                                                                                                                  TextEditingController();
+
+                                                                                                                                  showDialog(
+                                                                                                                                  context:
+                                                                                                                                  context,
+                                                                                                                                  builder:
+                                                                                                                                  (context)
+                                                                                                                                  =>
+                                                                                                                                  AlertDialog(
+                                                                                                                                  title:
+                                                                                                                                  Text('Create
+                                                                                                                                  User'),
+                                                                                                                                  content:
+                                                                                                                                  Column(
+                                                                                                                                  mainAxisSize:
+                                                                                                                                  MainAxisSize.min,
+                                                                                                                                  children:
+                                                                                                                                  [
+                                                                                                                                  TextField(
+                                                                                                                                  controller:
+                                                                                                                                  nameController,
+                                                                                                                                  decoration:
+                                                                                                                                  InputDecoration(
+                                                                                                                                  labelText:
+                                                                                                                                  'Name',
+                                                                                                                                  border:
+                                                                                                                                  OutlineInputBorder(),
+                                                                                                                                  ),
+                                                                                                                                  ),
+                                                                                                                                  SizedBox(height:
+                                                                                                                                  16),
+                                                                                                                                  TextField(
+                                                                                                                                  controller:
+                                                                                                                                  emailController,
+                                                                                                                                  decoration:
+                                                                                                                                  InputDecoration(
+                                                                                                                                  labelText:
+                                                                                                                                  'Email',
+                                                                                                                                  border:
+                                                                                                                                  OutlineInputBorder(),
+                                                                                                                                  ),
+                                                                                                                                  keyboardType:
+                                                                                                                                  TextInputType.emailAddress,
+                                                                                                                                  ),
+                                                                                                                                  ],
+                                                                                                                                  ),
+                                                                                                                                  actions:
+                                                                                                                                  [
+                                                                                                                                  TextButton(
+                                                                                                                                  onPressed:
+                                                                                                                                  ()
+                                                                                                                                  =>
+                                                                                                                                  Navigator.of(context).pop(),
+                                                                                                                                  child:
+                                                                                                                                  Text('Cancel'),
+                                                                                                                                  ),
+                                                                                                                                  ElevatedButton(
+                                                                                                                                  onPressed:
+                                                                                                                                  ()
+                                                                                                                                  async
+                                                                                                                                  {
+                                                                                                                                  try
+                                                                                                                                  {
+                                                                                                                                  await
+                                                                                                                                  viewModel.createUser(
+                                                                                                                                  nameController.text,
+                                                                                                                                  emailController.text,
+                                                                                                                                  );
+                                                                                                                                  Navigator.of(context).pop();
+                                                                                                                                  ScaffoldMessenger.of(context).showSnackBar(
+                                                                                                                                  SnackBar(content:
+                                                                                                                                  Text('User
+                                                                                                                                  created
+                                                                                                                                  successfully')),
+                                                                                                                                  );
+                                                                                                                                  }
+                                                                                                                                  catch
+                                                                                                                                  (e)
+                                                                                                                                  {
+                                                                                                                                  ScaffoldMessenger.of(context).showSnackBar(
+                                                                                                                                  SnackBar(content:
+                                                                                                                                  Text('Error:
+                                                                                                                                  $e')),
+                                                                                                                                  );
+                                                                                                                                  }
+                                                                                                                                  },
+                                                                                                                                  child:
+                                                                                                                                  Text('Create'),
+                                                                                                                                  ),
+                                                                                                                                  ],
+                                                                                                                                  ),
+                                                                                                                                  );
+                                                                                                                                  }
+                                                                                                                                  }
+
+                                                                                                                                  //
+                                                                                                                                  App
+                                                                                                                                  Entry
+                                                                                                                                  Point
+                                                                                                                                  void
+                                                                                                                                  main()
+                                                                                                                                  {
+                                                                                                                                  AppDependencies.initialize();
+                                                                                                                                  runApp(CleanArchitectureApp());
+                                                                                                                                  }
+      </div>
+
+      <div class="highlight">
+        <strong>Clean Architecture Features:</strong>
+        <ul>
+          <li><strong>Separation of Concerns</strong> - Domain, Data, and Presentation layers</li>
+          <li><strong>Dependency Injection</strong> - Loose coupling and testability</li>
+          <li><strong>Repository Pattern</strong> - Abstracted data access with caching</li>
+          <li><strong>Use Cases</strong> - Encapsulated business logic</li>
+          <li><strong>Error Handling</strong> - Comprehensive error recovery strategies</li>
+          <li><strong>State Management</strong> - Complex state composition with persistence</li>
+          <li><strong>API Integration</strong> - Real-world async operations with retry logic</li>
+          <li><strong>Performance</strong> - Caching, derived state, and optimized rebuilds</li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="example-container">
+      <div class="example-title">
+        Real-time Chat with Stream State
+        <span class="complexity-badge advanced">Advanced</span>
+      </div>
+
+      <p>A real-time chat application using StreamState with the correct API.</p>
+
+      <div class="code-block" data-lang="dart">import 'package:flutter/material.dart';
+        import 'package:compose_state/compose_state.dart';
+        import 'dart:async';
+
+        // Message model
+        class ChatMessage {
+        final String id;
+        final String userId;
+        final String userName;
+        final String content;
+        final DateTime timestamp;
+
+        ChatMessage({
+        required this.id,
+        required this.userId,
+        required this.userName,
+        required this.content,
+        required this.timestamp,
+        });
+        }
+
+        // Mock chat service
+        class ChatService {
+        static final _messageController = StreamController<ChatMessage>.broadcast();
+
+          static Stream<ChatMessage> get messageStream => _messageController.stream;
+
+            static void sendMessage(String content, String userId, String userName) {
+            final message = ChatMessage(
+            id: DateTime.now().millisecondsSinceEpoch.toString(),
+            userId: userId,
+            userName: userName,
+            content: content,
+            timestamp: DateTime.now(),
+            );
+            _messageController.add(message);
+            }
+
+            static void simulateIncomingMessages() {
+            Timer.periodic(Duration(seconds: 10), (timer) {
+            final messages = [
+            'Hello everyone! 👋',
+            'How is everyone doing?',
+            'Great weather today!',
+            'Anyone working on Flutter projects?',
+            ];
+
+            final message = ChatMessage(
+            id: DateTime.now().millisecondsSinceEpoch.toString(),
+            userId: 'bot',
+            userName: 'ChatBot',
+            content: messages[DateTime.now().second % messages.length],
+            timestamp: DateTime.now(),
+            );
+            _messageController.add(message);
+            });
+            }
+            }
+
+            // Stream state for new messages - Correct API
+            final newMessageStream = streamStateOf<ChatMessage?>(
+              ChatService.messageStream,
+              null, // Initial value
+              );
+
+              // Accumulated messages state
+              final allMessages = mutableStateOf<List<ChatMessage>>([]);
+
+                // Message input state
+                final messageInput = mutableStateOf('');
+
+                class ChatApp extends StatefulWidget {
+                @override
+                _ChatAppState createState() => _ChatAppState();
+                }
+
+                class _ChatAppState extends State<ChatApp> {
+                  final ScrollController _scrollController = ScrollController();
+
+                  @override
+                  void initState() {
+                  super.initState();
+
+                  // Listen to new messages and add them to the list
+                  newMessageStream.addListener(() {
+                  final newMessage = newMessageStream.value;
+                  if (newMessage != null) {
+                  final currentMessages = List<ChatMessage>.from(allMessages.value);
+                    currentMessages.add(newMessage);
+                    allMessages.value = currentMessages;
+
+                    // Auto-scroll to bottom
+                    WidgetsBinding.instance.addPostFrameCallback((_) {
+                    if (_scrollController.hasClients) {
+                    _scrollController.animateTo(
+                    _scrollController.position.maxScrollExtent,
+                    duration: Duration(milliseconds: 300),
+                    curve: Curves.easeOut,
+                    );
+                    }
+                    });
+                    }
+                    });
+
+                    // Start simulating messages
+                    ChatService.simulateIncomingMessages();
+                    }
+
+                    @override
+                    Widget build(BuildContext context) {
+                    return MaterialApp(
+                    home: Scaffold(
+                    appBar: AppBar(
+                    title: Text('Chat Room'),
+                    backgroundColor: Colors.teal,
+                    ),
+                    body: Column(
+                    children: [
+                    // Messages list
+                    Expanded(
+                    child: StateBuilder<List<ChatMessage>>(
+                      state: allMessages,
+                      builder: (context, messages) {
+                      if (messages.isEmpty) {
+                      return Center(
+                      child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                      Icon(Icons.chat_bubble_outline, size: 64, color: Colors.grey),
+                      SizedBox(height: 16),
+                      Text('No messages yet', style: TextStyle(fontSize: 18, color: Colors.grey)),
+                      ],
+                      ),
+                      );
+                      }
+
+                      return ListView.builder(
+                      controller: _scrollController,
+                      padding: EdgeInsets.all(16),
+                      itemCount: messages.length,
+                      itemBuilder: (context, index) {
+                      final message = messages[index];
+                      final isCurrentUser = message.userId == 'user1';
+
+                      return Padding(
+                      padding: EdgeInsets.symmetric(vertical: 4),
+                      child: Row(
+                      mainAxisAlignment: isCurrentUser
+                      ? MainAxisAlignment.end
+                      : MainAxisAlignment.start,
+                      children: [
+                      if (!isCurrentUser) ...[
+                      CircleAvatar(
+                      radius: 16,
+                      child: Text(message.userName[0]),
+                      ),
+                      SizedBox(width: 8),
+                      ],
+                      Flexible(
+                      child: Container(
+                      padding: EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                      decoration: BoxDecoration(
+                      color: isCurrentUser ? Colors.teal : Colors.grey[200],
+                      borderRadius: BorderRadius.circular(20),
+                      ),
+                      child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                      if (!isCurrentUser)
+                      Text(
+                      message.userName,
+                      style: TextStyle(
+                      fontWeight: FontWeight.bold,
+                      fontSize: 12,
+                      color: Colors.teal,
+                      ),
+                      ),
+                      Text(
+                      message.content,
+                      style: TextStyle(
+                      color: isCurrentUser ? Colors.white : Colors.black87,
+                      ),
+                      ),
+                      ],
+                      ),
+                      ),
+                      ),
+                      if (isCurrentUser) ...[
+                      SizedBox(width: 8),
+                      CircleAvatar(
+                      radius: 16,
+                      backgroundColor: Colors.teal,
+                      child: Text('U', style: TextStyle(color: Colors.white)),
+                      ),
+                      ],
+                      ],
+                      ),
+                      );
+                      },
+                      );
+                      },
+                      ),
+                      ),
+
+                      // Message input
+                      Container(
+                      padding: EdgeInsets.all(16),
+                      decoration: BoxDecoration(
+                      color: Colors.white,
+                      border: Border(top: BorderSide(color: Colors.grey[300]!)),
+                      ),
+                      child: Row(
+                      children: [
+                      Expanded(
+                      child: StateBuilder<String>(
+                        state: messageInput,
+                        builder: (context, input) {
+                        return TextField(
+                        decoration: InputDecoration(
+                        hintText: 'Type a message...',
+                        border: OutlineInputBorder(borderRadius: BorderRadius.circular(25)),
+                        contentPadding: EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                        ),
+                        onChanged: (value) => messageInput.value = value,
+                        onSubmitted: (_) => _sendMessage(),
+                        );
+                        },
+                        ),
+                        ),
+                        SizedBox(width: 8),
+                        StateBuilder<String>(
+                          state: messageInput,
+                          builder: (context, input) {
+                          return FloatingActionButton(
+                          onPressed: input.trim().isEmpty ? null : _sendMessage,
+                          backgroundColor: input.trim().isEmpty ? Colors.grey : Colors.teal,
+                          mini: true,
+                          child: Icon(Icons.send, color: Colors.white),
+                          );
+                          },
+                          ),
+                          ],
+                          ),
+                          ),
+                          ],
+                          ),
+                          ),
+                          );
+                          }
+
+                          void _sendMessage() {
+                          final content = messageInput.value.trim();
+                          if (content.isNotEmpty) {
+                          ChatService.sendMessage(content, 'user1', 'You');
+                          messageInput.value = '';
+                          }
+                          }
+
+                          @override
+                          void dispose() {
+                          _scrollController.dispose();
+                          super.dispose();
+                          }
+                          }</div>
+
+      <div class="highlight">
+        <strong>Advanced Patterns:</strong>
+        <ul>
+          <li><code>streamStateOf()</code> - Correct API with stream and initial value</li>
+          <li>Real-time data from streams with proper state management</li>
+          <li>Complex state composition and automatic UI updates</li>
+          <li>Memory-efficient message handling</li>
+          <li>Optimized scroll performance</li>
+        </ul>
+      </div>
+    </div>
+  </section>
+
+  <section id="api-reference" class="section">
+    <h2><span class="icon">📖</span>Complete API Reference</h2>
+
+    <div class="example-container">
+      <div class="example-title">
+        Core State Creation Functions
+        <span class="complexity-badge simple">Reference</span>
+      </div>
+
+      <div class="code-block" data-lang="dart">
+        // Basic reactive state
+        final counter = mutableStateOf<int>(0);
+
+          // Persistent state (requires ViewModel with Persistable mixin)
+          class MyViewModel extends ComposeViewModel with Persistable {
+          late final PersistableState<String> setting;
+
+            MyViewModel() {
+            setting = persistableState<String>(
+              'default_value',
+              fieldName: 'setting_key',
+              persistable: this,
+              enableHistory: false, // Optional: enable undo/redo
+              );
+              }
+              }
+
+              // Derived/computed state
+              final fullName = derivedStateOf<String>(
+                () => '${firstName.value} ${lastName.value}',
+                dependencies: [firstName, lastName], // Optional but recommended
+                );
+
+                // API state for async operations
+                final apiState = apiStateOf<User>(
+                  errorHandler: StateErrorHandler(
+                  defaultStrategy: RetryStrategy(maxAttempts: 3),
+                  ),
+                  );
+
+                  // Then use it:
+                  apiState.fetch(() => ApiService.getUser(userId));
+
+                  // History state with undo/redo
+                  final textState = historyStateOf<String>('initial text');
+                    textState.value = 'new text';
+                    textState.undo(); // Back to 'initial text'
+                    textState.redo(); // Forward to 'new text'
+
+                    // Stream-based state
+                    final streamState = streamStateOf<int>(
+                      myStream,
+                      initialValue: 0,
+                      );
+      </div>
+    </div>
+
+    <div class="example-container">
+      <div class="example-title">
+        UI Components
+        <span class="complexity-badge simple">Reference</span>
+      </div>
+
+      <div class="code-block" data-lang="dart">
+        // Basic state builder
+        StateBuilder<int>(
+          state: counter,
+          builder: (context, value) => Text('$value'),
+          )
+
+          // State builder with error handling
+          StateBuilder<String>(
+            state: textState,
+            builder: (context, text) => Text(text),
+            errorBuilder: (context, error) => Text('Error: ${error.message}'),
+            loadingBuilder: (context) => CircularProgressIndicator(),
+            enableOptimizations: true, // Default: true
+            enableAutoDisposal: true, // Default: true
+            enableErrorBoundary: true, // Default: true
+            )
+
+            // ViewModel scope for dependency injection
+            ViewModelScope(
+            viewModels: {
+            MyViewModel: MyViewModel(),
+            AnotherViewModel: AnotherViewModel(),
+            },
+            child: MyWidget(),
+            )
+
+            // Accessing ViewModels (must specify type)
+            final viewModel = ViewModelScope.of<MyViewModel>(context);
+      </div>
+    </div>
+
+    <div class="example-container">
+      <div class="example-title">
+        Testing Utilities
+        <span class="complexity-badge intermediate">Reference</span>
+      </div>
+
+      <div class="code-block" data-lang="dart">
+        import 'package:compose_state/testing.dart';
+
+        // Mock states for testing
+        final mockState = mockStateOf<int>(42);
+          mockState.throwOnSet(); // Simulate errors
+          mockState.delaySet(Duration(seconds: 1)); // Simulate delays
+          mockState.notifyOnSameValue(true); // Control notification behavior
+
+          // Mock API state
+          final mockApiState = mockApiStateOf<User>();
+            mockApiState.simulateLoading();
+            mockApiState.simulateSuccess(user);
+            mockApiState.simulateError('Network error');
+
+            // State change tracking
+            final tracker = createStateTracker();
+            tracker.trackState('counter', counter);
+            tracker.startTracking();
+
+            counter.value = 1;
+            counter.value = 2;
+
+            final history = tracker.getChangeHistory('counter');
+            expect(history.length, 3); // initial + 2 changes
+
+            // Wait for state changes in tests
+            await StateTestUtils.waitForStateValue(counter, 5);
+            await StateTestUtils.waitForStateChange(counter);
+
+            // Verify state sequences
+            final changes = await StateTestUtils.recordStateChanges(
+            counter,
+            Duration(seconds: 1),
+            );
+            StateTestUtils.verifyStateSequence(changes, [0, 1, 2, 3]);
+
+            // Test listeners
+            final listener = StateTestUtils.createTestListener<int>();
+              counter.addListener(listener.createListener(counter));
+              listener.expectCallCount(3);
+              listener.expectValues([0, 1, 2]);
+      </div>
+    </div>
+  </section>
+
+  <section id="best-practices" class="section">
+    <h2><span class="icon">✨</span>Best Practices & Performance</h2>
+
+    <div class="feature-grid">
+      <div class="feature-card">
+        <h4>🎯 Correct Factory Functions</h4>
+        <ul>
+          <li><code>mutableStateOf(value)</code> - Basic reactive state</li>
+          <li><code>persistableState(value, fieldName: 'key', persistable: this)</code> - Persistent state</li>
+          <li><code>apiStateOf(errorHandler: handler)</code> - API state</li>
+          <li><code>derivedStateOf(computation, dependencies: [...])</code> - Computed state</li>
+          <li><code>streamStateOf(stream, initialValue)</code> - Stream-based state</li>
+          <li><code>historyStateOf(value)</code> - State with undo/redo</li>
+        </ul>
+      </div>
+
+      <div class="feature-card">
+        <h4>⚡ Performance Optimization</h4>
+        <ul>
+          <li>Use OptimizedStateBuilder for expensive widgets</li>
+          <li>Always specify dependencies in derivedStateOf</li>
+          <li>Batch state updates when possible</li>
+          <li>Dispose states properly in ViewModels</li>
+          <li>Use ViewModelScope for proper lifecycle management</li>
+        </ul>
+      </div>
+
+      <div class="feature-card">
+        <h4>🛡️ Error Handling</h4>
+        <ul>
+          <li>Always provide StateErrorHandler for API states</li>
+          <li>Implement retry strategies for network calls</li>
+          <li>Use UiState pattern (Loading, Success, Error)</li>
+          <li>Handle edge cases in state builders</li>
+        </ul>
+      </div>
+
+      <div class="feature-card">
+        <h4>🧪 Testing Strategy</h4>
+        <ul>
+          <li>Use mockStateOf() for testing</li>
+          <li>Test ViewModels separately from UI</li>
+          <li>Use StateTestUtils for state change tracking</li>
+          <li>Test error scenarios and edge cases</li>
+        </ul>
+      </div>
+
+      <div class="feature-card">
+        <h4>🏗️ Architecture Guidelines</h4>
+        <ul>
+          <li>Use ComposeViewModel with Persistable mixin</li>
+          <li>Wrap apps with ViewModelScope</li>
+          <li>Separate business logic from UI components</li>
+          <li>Follow clean architecture principles</li>
+        </ul>
+      </div>
+
+      <div class="feature-card">
+        <h4>🔒 Common Mistakes to Avoid</h4>
+        <ul>
+          <li>❌ Using persistableStateOf() (doesn't exist)</li>
+          <li>❌ Missing dependencies in derivedStateOf()</li>
+          <li>❌ Not using ViewModelScope for persistence</li>
+          <li>❌ Forgetting to call fetch() on ApiState</li>
+          <li>✅ Use the correct APIs shown in examples</li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="highlight">
+      <h3>🚀 Quick API Reference</h3>
+      <div class="code-block" data-lang="dart">// ✅ CORRECT API USAGE
+
+        // Basic reactive state
+        final counter = mutableStateOf(0);
+
+        // Persistent state (requires ViewModel with Persistable)
+        class MyViewModel extends ComposeViewModel with Persistable {
+        late final PersistableState<String> theme;
+
+          MyViewModel() {
+          theme = persistableState('light',
+          fieldName: 'app_theme',
+          persistable: this
+          );
+          }
+          }
+
+          // API state
+          final apiState = apiStateOf<User>(
+            errorHandler: StateErrorHandler(
+            defaultStrategy: RetryStrategy(maxAttempts: 3),
+            ),
+            );
+            // Then call: apiState.fetch(() => fetchUser());
+
+            // Derived state with dependencies
+            final fullName = derivedStateOf(
+            () => '${firstName.value} ${lastName.value}',
+            dependencies: [firstName, lastName],
+            );
+
+            // Stream state
+            final streamState = streamStateOf<String>(
+              myStream,
+              'initial_value'
+              );
+
+              // History state
+              final historyState = historyStateOf('initial');
+
+              // Mock state (for testing)
+              final mockState = mockStateOf(42);</div>
+    </div>
+  </section>
+
+  <footer
+    style="text-align: center; padding: 40px 0; background: #f8f9fa; margin: 40px -20px -20px -20px; border-radius: 0 0 15px 15px;">
+    <h3 style="color: #007bff; margin-bottom: 20px;">🎉 Ready to Build Amazing Apps?</h3>
+    <p style="font-size: 1.1em; margin-bottom: 20px;">
+      Start using Compose State with the correct APIs in your Flutter projects today!
+    </p>
+    <div style="display: flex; justify-content: center; gap: 20px; flex-wrap: wrap;">
+      <a href="https://pub.dev/packages/compose_state"
+        style="background: #007bff; color: white; padding: 12px 24px; text-decoration: none; border-radius: 25px; font-weight: bold;">📦
+        Get Package</a>
+      <a href="https://github.com/compose-state/compose_state"
+        style="background: #28a745; color: white; padding: 12px 24px; text-decoration: none; border-radius: 25px; font-weight: bold;">🔗
+        GitHub</a>
+    </div>
+    <div
+      style="background: #fff3cd; padding: 20px; border-radius: 10px; margin: 30px 0; border-left: 4px solid #ffc107;">
+      <h3 style="color: #856404; margin-bottom: 15px;">⚠️ Common API Mistakes & Fixes</h3>
+      <div
+        style="background: #2d3748; color: #e2e8f0; padding: 20px; border-radius: 8px; font-family: 'Courier New', monospace; font-size: 14px; line-height: 1.5; overflow-x: auto;">
+        // ❌ WRONG: Missing type parameter in ViewModelScope.of()
+        final viewModel = ViewModelScope.of(context); // Returns ComposeViewModel
+        viewModel.themeMode; // ERROR: themeMode not defined on ComposeViewModel
+
+        // ✅ CORRECT: Always specify the ViewModel type
+        final viewModel = ViewModelScope.of&lt;SettingsViewModel&gt;(context);
+        viewModel.themeMode; // Works! Returns PersistableState&lt;String&gt;
+
+        // ❌ WRONG: Using global persistableStateOf (doesn't exist)
+        final themeMode = persistableStateOf&lt;String&gt;('theme_mode', defaultValue: 'system');
+
+        // ✅ CORRECT: Use persistableState within ViewModel with Persistable mixin
+        class SettingsViewModel extends ComposeViewModel with Persistable {
+        late final PersistableState&lt;String&gt; themeMode;
+
+        SettingsViewModel() {
+        themeMode = persistableState&lt;String&gt;(
+        'system',
+        fieldName: 'theme_mode',
+        persistable: this,
+        );
+        }
+        }
+
+        // ❌ WRONG: API state with function parameter
+        final apiState = apiStateOf&lt;User&gt;(() =&gt; ApiService.getUser());
+
+        // ✅ CORRECT: Create API state, then call fetch
+        final apiState = apiStateOf&lt;User&gt;();
+        apiState.fetch(() =&gt; ApiService.getUser());
+      </div>
+      <div style="margin-top: 15px; padding: 15px; background: #d1ecf1; border-radius: 5px;">
+        <strong style="color: #0c5460;">Key API Corrections Made:</strong>
+        <ul style="margin: 10px 0; color: #0c5460;">
+          <li><code>ViewModelScope.of&lt;T&gt;(context)</code> - Always specify ViewModel type</li>
+          <li><code>persistableState()</code> - Use within ViewModel, not as global function</li>
+          <li><code>apiState.fetch()</code> - Call fetch method after creating API state</li>
+          <li><code>StateBuilder&lt;T&gt;</code> - Always specify type parameters</li>
+          <li><code>mockStateOf()</code> - Available in testing package</li>
+          <li><code>createStateTracker()</code> - Factory function for state tracking</li>
+        </ul>
+      </div>
+    </div>
+
+    <p style="margin-top: 30px; color: #6c757d;">
+      Made with ❤️ for the Flutter community - Updated with Current APIs
+    </p>
+  </footer>
+  </div>
+
+  <!-- Prism.js JavaScript -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-core.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/plugins/autoloader/prism-autoloader.min.js"></script>
+  <script
+    src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/plugins/line-numbers/prism-line-numbers.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/plugins/toolbar/prism-toolbar.min.js"></script>
+  <script
+    src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/plugins/copy-to-clipboard/prism-copy-to-clipboard.min.js"></script>
+
+  <script>
+    document.addEventListener('DOMContentLoaded', function () {
+      // Convert existing code blocks to Prism.js format
+      const codeBlocks = document.querySelectorAll('.code-block[data-lang]');
+
+      codeBlocks.forEach(block => {
+        const code = block.textContent;
+        const language = block.getAttribute('data-lang') || 'dart';
+        const formattedCode = language === 'dart' ? formatDartCode(code) : code.trim();
+
+        // Create new pre and code elements for Prism.js
+        const pre = document.createElement('pre');
+        const codeElement = document.createElement('code');
+
+        pre.className = `line-numbers language-${language}`;
+        codeElement.className = `language-${language}`;
+        codeElement.textContent = formattedCode;
+
+        pre.appendChild(codeElement);
+
+        // Replace the original block
+        block.parentNode.replaceChild(pre, block);
+      });
+
+      // Re-run Prism highlighting
+      Prism.highlightAll();
+
+      // Smooth scrolling for navigation
+      document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+        anchor.addEventListener('click', function (e) {
+          e.preventDefault();
+          const target = document.querySelector(this.getAttribute('href'));
+          if (target) {
+            target.scrollIntoView({
+              behavior: 'smooth',
+              block: 'start'
+            });
+          }
+        });
+      });
+    });
+
+    function formatDartCode(code) {
+      // Just clean up the code and let Prism.js handle the rest
+      const lines = code.split('\n');
+
+      // Remove empty lines at start and end
+      while (lines.length > 0 && lines[0].trim() === '') {
+        lines.shift();
+      }
+      while (lines.length > 0 && lines[lines.length - 1].trim() === '') {
+        lines.pop();
+      }
+
+      if (lines.length === 0) return '';
+
+      // Find minimum indentation (excluding empty lines)
+      let minIndent = Infinity;
+      lines.forEach(line => {
+        if (line.trim() !== '') {
+          const indent = line.match(/^(\s*)/)[1].length;
+          minIndent = Math.min(minIndent, indent);
+        }
+      });
+
+      // If minIndent is still Infinity, set it to 0
+      if (minIndent === Infinity) minIndent = 0;
+
+      // Remove minimum indentation from all lines
+      const formatted = lines.map(line => {
+        if (line.trim() === '') return '';
+        return line.substring(minIndent);
+      }).join('\n');
+
+      return formatted;
+    }
+
+    // Define Dart language for Prism.js
+    Prism.languages.dart = {
+      'comment': [
+        {
+          pattern: /(^|[^\\])\/\*[\s\S]*?(?:\*\/|$)/,
+          lookbehind: true
+        },
+        {
+          pattern: /(^|[^\\:])\/\/.*/,
+          lookbehind: true,
+          greedy: true
+        }
+      ],
+      'string': {
+        pattern: /(["'])(?:(?!\1)[^\\\r\n]|\\(?:\r\n|[\s\S]))*\1/,
+        greedy: true
+      },
+      'keyword': /\b(?:abstract|as|assert|async|await|break|case|catch|class|const|continue|default|deferred|do|dynamic|else|enum|export|extends|external|factory|false|final|finally|for|get|if|implements|import|in|interface|is|library|mixin|new|null|on|operator|part|rethrow|return|set|static|super|switch|sync|this|throw|true|try|typedef|var|void|while|with|yield)\b/,
+      'builtin': /\b(?:bool|double|Function|int|List|Map|num|Object|RegExp|Set|String|StringBuffer|Symbol)\b/,
+      'operator': /\+\+|--|&&|\|\||[!=<>]=?|[+\-*\/%&|^~?:]/,
+      'punctuation': /[{}[\];(),.:]/,
+      'number': /\b(?:0x[\da-f]+|\d*\.?\d+(?:e[+-]?\d+)?)\b/i,
+      'class-name': {
+        pattern: /\b[A-Z][a-zA-Z0-9_]*\b/,
+        greedy: true
+      },
+      'function': /\b[a-z_][a-zA-Z0-9_]*(?=\s*\()/,
+      'annotation': {
+        pattern: /@[a-zA-Z_][a-zA-Z0-9_]*/,
+        alias: 'punctuation'
+      }
+    };
+
+    // Configure Prism.js toolbar
+    Prism.plugins.toolbar.registerButton('select-code', {
+      text: 'Select All',
+      onClick: function (env) {
+        if (document.body.createTextRange) {
+          const range = document.body.createTextRange();
+          range.moveToElementText(env.code);
+          range.select();
+        } else if (window.getSelection) {
+          const selection = window.getSelection();
+          const range = document.createRange();
+          range.selectNodeContents(env.code);
+          selection.removeAllRanges();
+          selection.addRange(range);
+        }
+      }
+    });
+  </script>
+</body>
+
+</html>

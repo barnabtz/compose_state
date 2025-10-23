@@ -305,21 +305,21 @@ class StateChangeEvent<T> {
 
 /// Mock implementation for API states
 class MockApiState<T> extends MockState<UiState<T>> {
-  MockApiState() : super(const Loading());
+  MockApiState() : super(const LoadingState());
 
   /// Simulate a successful API call
   void simulateSuccess(T data) {
-    value = Success(data);
+    value = SuccessState(data);
   }
 
   /// Simulate an API error
   void simulateError(String error) {
-    value = Error(error);
+    value = ErrorState(error);
   }
 
   /// Simulate loading state
   void simulateLoading() {
-    value = const Loading();
+    value = const LoadingState();
   }
 
   /// Simulate an API call with delay

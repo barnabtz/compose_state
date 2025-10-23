@@ -1,5 +1,6 @@
 export 'src/api_state.dart';
 export 'src/compose_view_model.dart';
+export 'src/computed_ui_state.dart';
 export 'src/derived_state.dart';
 export 'src/disposable_state.dart';
 export 'src/equality_checker.dart';
@@ -31,5 +32,6 @@ export 'src/transactional_state_mixin.dart';
 export 'src/state_transaction.dart';
 export 'src/type_validator.dart';
 export 'src/ui_state.dart';
+export 'src/ui_state_builder.dart';
 export 'src/validation_mixin.dart';
 export 'src/enhanced_ui_components.dart';

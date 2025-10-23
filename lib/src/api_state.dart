@@ -11,7 +11,7 @@ class ApiState<T> extends MutableState<UiState<T>> implements ObservableState<Ui
   ApiState({
     StateErrorHandler? errorHandler,
   }) : _errorHandler = errorHandler ?? StateErrorHandler(),
-       super(const Loading());
+       super(const LoadingState());
 
   Future<void> fetch(
     Future<T> Function() apiCall, {
@@ -19,7 +19,7 @@ class ApiState<T> extends MutableState<UiState<T>> implements ObservableState<Ui
     Duration retryDelay = const Duration(seconds: 1),
     T? fallbackValue,
   }) async {
-    value = const Loading();
+    value = const LoadingState();
     
     await _errorHandler.withErrorBoundary(
       'api_fetch',
@@ -31,7 +31,7 @@ class ApiState<T> extends MutableState<UiState<T>> implements ObservableState<Ui
           retryDelay: retryDelay,
         );
         
-        value = Success(result);
+        value = SuccessState(result);
       },
       stateKey: stateId,
       valueType: UiState<T>,
@@ -54,13 +54,13 @@ class ApiState<T> extends MutableState<UiState<T>> implements ObservableState<Ui
             ),
             fallbackValue: fallbackValue,
           );
-          value = Success(recovered);
+          value = SuccessState(recovered);
         } catch (recoveryError) {
           // Recovery failed, set error state
-          value = Error(error.message);
+          value = ErrorState(error.message);
         }
       } else {
-        value = Error(error.toString());
+        value = ErrorState(error.toString());
       }
     });
   }
@@ -104,27 +104,27 @@ class ApiState<T> extends MutableState<UiState<T>> implements ObservableState<Ui
 
   /// Refreshes the current data by re-executing the last API call.
   Future<void> refresh() async {
-    if (value is Success<T>) {
+    if (value is SuccessState<T>) {
       // Re-fetch using the same parameters as the last successful call
       // Note: This is a simplified implementation. In practice, you'd want
       // to store the original API call parameters.
-      value = const Loading();
+      value = const LoadingState();
     }
   }
 
   /// Clears the current state and resets to loading.
   void clear() {
-    value = const Loading();
+    value = const LoadingState();
   }
 
   /// Sets an error state manually.
   void setError(String errorMessage) {
-    value = Error(errorMessage);
+    value = ErrorState(errorMessage);
   }
 
   /// Sets a success state manually.
   void setSuccess(T data) {
-    value = Success(data);
+    value = SuccessState(data);
   }
 }
 

@@ -70,15 +70,15 @@ void main() {
       test('mock API state', () {
         final mockApi = mockApiStateOf<String>();
 
-        expect(mockApi.value, isA<Loading>());
+        expect(mockApi.value, isA<LoadingState>());
 
         mockApi.simulateSuccess('data');
-        expect(mockApi.value, isA<Success<String>>());
-        expect((mockApi.value as Success<String>).data, 'data');
+        expect(mockApi.value, isA<SuccessState<String>>());
+        expect((mockApi.value as SuccessState<String>).data, 'data');
 
         mockApi.simulateError('error message');
-        expect(mockApi.value, isA<Error<String>>());
-        expect((mockApi.value as Error<String>).message, 'error message');
+        expect(mockApi.value, isA<ErrorState<String>>());
+        expect((mockApi.value as ErrorState<String>).error, 'error message');
       });
     });
 
@@ -139,7 +139,7 @@ void main() {
 
       test('state matchers', () {
         final state = mutableStateOf(0);
-        final apiState = mutableStateOf<UiState<String>>(const Success('data'));
+        final apiState = mutableStateOf<UiState<String>>(const SuccessState('data'));
 
         expect(state.isDisposed, isFalse);
 
@@ -148,10 +148,10 @@ void main() {
 
         expect(StateMatchers.isSuccess(apiState.value, 'data'), isTrue);
 
-        apiState.value = const Error('error');
+        apiState.value = const ErrorState('error');
         expect(StateMatchers.isError(apiState.value, 'error'), isTrue);
 
-        apiState.value = const Loading();
+        apiState.value = const LoadingState();
         expect(StateMatchers.isLoading(apiState.value), isTrue);
       });
 

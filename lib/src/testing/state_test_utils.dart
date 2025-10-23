@@ -199,7 +199,7 @@ class StateTestUtils {
     T expectedData, {
     String? reason,
   }) {
-    if (apiState is! Success<T>) {
+    if (apiState is! SuccessState<T>) {
       throw AssertionError(reason ?? 'Expected Success state, got ${apiState.runtimeType}');
     }
     
@@ -214,12 +214,12 @@ class StateTestUtils {
     String expectedError, {
     String? reason,
   }) {
-    if (apiState is! Error<T>) {
+    if (apiState is! ErrorState<T>) {
       throw AssertionError(reason ?? 'Expected Error state, got ${apiState.runtimeType}');
     }
     
-    if ((apiState).message != expectedError) {
-      throw AssertionError(reason ?? 'Error message mismatch: expected $expectedError, got ${(apiState).message}');
+    if ((apiState).error != expectedError) {
+      throw AssertionError(reason ?? 'Error message mismatch: expected $expectedError, got ${(apiState).error}');
     }
   }
 
@@ -228,7 +228,7 @@ class StateTestUtils {
     UiState<T> apiState, {
     String? reason,
   }) {
-    if (apiState is! Loading<T>) {
+    if (apiState is! LoadingState<T>) {
       throw AssertionError(reason ?? 'Expected Loading state, got ${apiState.runtimeType}');
     }
   }
@@ -394,19 +394,19 @@ class StateMatchers {
   static bool isDisposed(ObservableState state) => state.isDisposed;
   
   /// Checks if a UI state is loading.
-  static bool isLoading(dynamic state) => state is Loading;
+  static bool isLoading(dynamic state) => state is LoadingState;
   
   /// Checks if a UI state is success with optional data check.
   static bool isSuccess<T>(dynamic state, [T? expectedData]) {
-    if (state is! Success<T>) return false;
+    if (state is! SuccessState<T>) return false;
     if (expectedData == null) return true;
     return state.data == expectedData;
   }
   
   /// Checks if a UI state is error with optional message check.
   static bool isError<T>(dynamic state, [String? expectedMessage]) {
-    if (state is! Error<T>) return false;
+    if (state is! ErrorState<T>) return false;
     if (expectedMessage == null) return true;
-    return state.message == expectedMessage;
+    return state.error == expectedMessage;
   }
 }

@@ -1,0 +1,3328 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Compose State - Complete Documentation & Examples</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            line-height: 1.6;
+            color: #333;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+            background: white;
+            margin-top: 20px;
+            margin-bottom: 20px;
+            border-radius: 15px;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+        }
+
+        .header {
+            text-align: center;
+            padding: 40px 0;
+            background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+            margin: -20px -20px 40px -20px;
+            border-radius: 15px 15px 0 0;
+            color: white;
+        }
+
+        .header h1 {
+            font-size: 3.5em;
+            margin-bottom: 10px;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
+        }
+
+        .header p {
+            font-size: 1.3em;
+            opacity: 0.9;
+        }
+
+        .nav {
+            background: #f8f9fa;
+            padding: 20px;
+            border-radius: 10px;
+            margin-bottom: 30px;
+            position: sticky;
+            top: 20px;
+            z-index: 100;
+        }
+
+        .nav ul {
+            list-style: none;
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 20px;
+        }
+
+        .nav a {
+            text-decoration: none;
+            color: #495057;
+            padding: 10px 20px;
+            border-radius: 25px;
+            transition: all 0.3s ease;
+            font-weight: 500;
+        }
+
+        .nav a:hover {
+            background: #007bff;
+            color: white;
+            transform: translateY(-2px);
+        }
+
+        .section {
+            margin-bottom: 50px;
+            padding: 30px;
+            background: #f8f9fa;
+            border-radius: 15px;
+            border-left: 5px solid #007bff;
+        }
+
+        .section h2 {
+            color: #007bff;
+            font-size: 2.5em;
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .section h3 {
+            color: #495057;
+            font-size: 1.8em;
+            margin: 30px 0 15px 0;
+            padding-bottom: 10px;
+            border-bottom: 2px solid #dee2e6;
+        }
+
+        .code-block {
+            background: #2d3748;
+            color: #e2e8f0;
+            padding: 25px;
+            border-radius: 10px;
+            margin: 20px 0;
+            overflow-x: auto;
+            position: relative;
+            font-family: 'Firaier New' 'Consolas', ' ' Cour', monospace;
+ line-height: 1.6;
+            white-space;
+            : 2;
+            ze: 14px
+        }
+
+        .code-block::before {
+            content: attr(data-lang);
+            position: absolute;
+            top: 10px;
+            right: 15px;
+            background: #4a5568;
+            color: #e2e8f0;
+            padding: 5px 10px;
+            border-radius: 5px;
+            font-size: 0.8em;
+            font-weight: bold;
+        }
+
+        .highlight {
+            background: linear-gradient(120deg, #a8edea 0%, #fed6e3 100%);
+            padding: 20px;
+            border-radius: 10px;
+            margin: 20px 0;
+            border-left: 4px solid #17a2b8;
+        }
+
+        .feature-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 25px;
+            margin: 30px 0;
+        }
+
+        .feature-card {
+            background: white;
+            padding: 25px;
+            border-radius: 15px;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+            transition: transform 0.3s ease;
+            border-top: 4px solid #007bff;
+        }
+
+        .feature-card:hover {
+            transform: translateY(-5px);
+        }
+
+        .feature-card h4 {
+            color: #007bff;
+            font-size: 1.4em;
+            margin-bottom: 15px;
+        }
+
+        .example-container {
+            background: white;
+            border-radius: 15px;
+            padding: 25px;
+            margin: 25px 0;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+        }
+
+        .example-title {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 15px 25px;
+            margin: -25px -25px 25px -25px;
+            border-radius: 15px 15px 0 0;
+            font-size: 1.3em;
+            font-weight: bold;
+        }
+
+        .complexity-badge {
+            display: inline-block;
+            padding: 5px 15px;
+            border-radius: 20px;
+            font-size: 0.9em;
+            font-weight: bold;
+            margin-left: 10px;
+        }
+
+        .simple {
+            background: #d4edda;
+            color: #155724;
+        }
+
+        .intermediate {
+            background: #fff3cd;
+            color: #856404;
+        }
+
+        .advanced {
+            background: #f8d7da;
+            color: #721c24;
+        }
+
+        .icon {
+            font-size: 1.5em;
+            margin-right: 10px;
+        }
+
+        .toc {
+            background: #e9ecef;
+            padding: 20px;
+            border-radius: 10px;
+            margin-bottom: 30px;
+        }
+
+        .toc h3 {
+            color: #495057;
+            margin-bottom: 15px;
+        }
+
+        .toc ul {
+            list-style: none;
+            padding-left: 20px;
+        }
+
+        .toc li {
+            margin: 8px 0;
+        }
+
+        .toc a {
+            color: #007bff;
+            text-decoration: none;
+        }
+
+        .toc a:hover {
+            text-decoration: underline;
+        }
+
+        @media (max-width: 768px) {
+            .container {
+                margin: 10px;
+                padding: 15px;
+            }
+
+            .header h1 {
+                font-size: 2.5em;
+            }
+
+            .nav ul {
+                flex-direction: column;
+                align-items: center;
+            }
+
+            .feature-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🚀 Compose State</h1>
+            <p>Complete Documentation & Architecture Examples</p>
+            <p style="font-size: 1em; margin-top: 10px;">From Simple Counters to Complex Enterprise Applications</p>
+        </div>
+
+        <nav class="nav">
+            <ul>
+                <li><a href="#overview">📋 Overview</a></li>
+                <li><a href="#installation">📦 Installation</a></li>
+                <li><a href="#basic-examples">🎯 Basic Examples</a></li>
+                <li><a href="#intermediate-examples">⚡ Intermediate</a></li>
+                <li><a href="#advanced-examples">🏗️ Advanced</a></li>
+                <li><a href="#architecture">🏛️ Architecture</a></li>
+                <li><a href="#testing">🧪 Testing</a></li>
+                <li><a href="#best-practices">✨ Best Practices</a></li>
+            </ul>
+        </nav>
+
+        <div class="toc">
+            <h3>📚 Table of Contents</h3>
+            <ul>
+                <li><a href="#overview">Project Overview & Features</a></li>
+                <li><a href="#installation">Installation & Setup</a></li>
+                <li><a href="#basic-examples">Basic Examples</a>
+                    <ul>
+                        <li><a href="#simple-counter">Simple Counter</a></li>
+                        <li><a href="#persistent-settings">Persistent Settings</a></li>
+                        <li><a href="#form-validation">Form Validation</a></li>
+                    </ul>
+                </li>
+                <li><a href="#intermediate-examples">Intermediate Examples</a>
+                    <ul>
+                        <li><a href="#api-integration">API Integration</a></li>
+                        <li><a href="#shopping-cart">Shopping Cart</a></li>
+                        <li><a href="#todo-app">Todo Application</a></li>
+                    </ul>
+                </li>
+                <li><a href="#advanced-examples">Advanced Examples</a>
+                    <ul>
+                        <li><a href="#real-time-chat">Real-time Chat</a></li>
+                        <li><a href="#offline-sync">Offline Sync</a></li>
+                        <li><a href="#enterprise-app">Enterprise Application</a></li>
+                    </ul>
+                </li>
+                <li><a href="#architecture">Architecture Patterns</a></li>
+                <li><a href="#testing">Testing Strategies</a></li>
+                <li><a href="#best-practices">Best Practices & Performance</a></li>
+            </ul>
+        </div>
+
+        <section id="overview" class="section">
+            <h2><span class="icon">📋</span>Project Overview</h2>
+
+            <div class="highlight">
+                <strong>Compose State</strong> is a comprehensive Flutter state management package inspired by Jetpack
+                Compose,
+                offering reactive state, centralized ViewModel scoping, API handling, and persistence for basic,
+                complex,
+                and dynamic objects.
+            </div>
+
+            <h3>🌟 Key Features</h3>
+            <div class="feature-grid">
+                <div class="feature-card">
+                    <h4>🔄 Reactive State Types</h4>
+                    <p>MutableState, PersistableState, ApiState, DerivedState, HistoryState, StreamState, and
+                        SignalState for every use case.</p>
+                </div>
+                <div class="feature-card">
+                    <h4>🛡️ Error Handling</h4>
+                    <p>Comprehensive error recovery strategies, retry mechanisms, and error boundaries with automatic
+                        fallbacks.</p>
+                </div>
+                <div class="feature-card">
+                    <h4>🧠 Memory Management</h4>
+                    <p>Automatic disposal, weak reference tracking, and memory leak detection for optimal performance.
+                    </p>
+                </div>
+                <div class="feature-card">
+                    <h4>⚡ Performance Optimization</h4>
+                    <p>Deep equality checking, notification batching, and optimized rebuilds for smooth user
+                        experiences.</p>
+                </div>
+                <div class="feature-card">
+                    <h4>🧪 Testing Infrastructure</h4>
+                    <p>Mock implementations, state change tracking, and comprehensive testing utilities.</p>
+                </div>
+                <div class="feature-card">
+                    <h4>🔒 Type Safety</h4>
+                    <p>Runtime type validation for serialization and persistence operations with compile-time safety.
+                    </p>
+                </div>
+            </div>
+        </section>
+        <section id="installation" class="section">
+            <h2><span class="icon">📦</span>Installation & Setup</h2>
+
+            <h3>1. Add Dependency</h3>
+            <div class="code-block" data-lang="yaml">
+                dependencies:
+                compose_state: ^0.1.0
+                flutter:
+                sdk: flutter</div>
+
+            <h3>2. Import Package</h3>
+            <div class="code-block" data-lang="dart">
+                import 'package:compose_state/compose_state.dart';</div>
+
+            <h3>3. Basic Setup</h3>
+            <div class="code-block" data-lang="dart">
+                void main() {
+                runApp(MyApp());
+                }
+
+                class MyApp extends StatelessWidget {
+                @override
+                Widget build(BuildContext context) {
+                return MaterialApp(
+                title: 'Compose State Demo',
+                home: MyHomePage(),
+                );
+                }
+                }</div>
+        </section>
+
+        <section id="basic-examples" class="section">
+            <h2><span class="icon">🎯</span>Basic Examples</h2>
+
+            <div id="simple-counter" class="example-container">
+                <div class="example-title">
+                    Simple Counter App
+                    <span class="complexity-badge simple">Simple</span>
+                </div>
+
+                <p>The classic counter example demonstrating basic reactive state management.</p>
+
+                <div class="code-block" data-lang="dart">
+                    import 'package:flutter/material.dart';
+                    import 'package:compose_state/compose_state.dart';
+
+                    // Create a reactive state
+                    final counter = mutableStateOf(0);
+
+                    class CounterApp extends StatelessWidget {
+                    @override
+                    Widget build(BuildContext context) {
+                    return MaterialApp(
+                    home: Scaffold(
+                    appBar: AppBar(
+                    title: Text('Counter App'),
+                    backgroundColor: Colors.blue,
+                    ),
+                    body: Center(
+                    child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                    Text(
+                    'You have pushed the button this many times:',
+                    style: TextStyle(fontSize: 16),
+                    ),
+                    SizedBox(height: 20),
+                    StateBuilder&lt;int&gt;(
+                    state: counter,
+                    builder: (context, count) {
+                    return Text(
+                    '$count',
+                    style: Theme.of(context).textTheme.headlineMedium?.copyWith(
+                    color: Colors.blue,
+                    fontWeight: FontWeight.bold,
+                    ),
+                    );
+                    },
+                    ),
+                    ],
+                    ),
+                    ),
+                    floatingActionButton: Column(
+                    mainAxisAlignment: MainAxisAlignment.end,
+                    children: [
+                    FloatingActionButton(
+                    onPressed: () => counter.value++,
+                    tooltip: 'Increment',
+                    child: Icon(Icons.add),
+                    ),
+                    SizedBox(height: 10),
+                    FloatingActionButton(
+                    onPressed: () => counter.value--,
+                    tooltip: 'Decrement',
+                    child: Icon(Icons.remove),
+                    ),
+                    ],
+                    ),
+                    ),
+                    );
+                    }
+                    }</div>
+
+                <div class="highlight">
+                    <strong>Key Concepts:</strong>
+                    <ul>
+                        <li><code>mutableStateOf()</code> - Creates reactive state</li>
+                        <li><code>StateBuilder</code> - Rebuilds UI when state changes</li>
+                        <li>Automatic disposal and memory management</li>
+                    </ul>
+                </div>
+            </div>
+            <div id="persistent-settings" class="example-container">
+                <div class="example-title">
+                    Persistent Settings
+                    <span class="complexity-badge simple">Simple</span>
+                </div>
+
+                <p>Settings that automatically persist to device storage and restore on app restart.</p>
+
+                <div class="code-block" data-lang="dart">
+                    import 'package:flutter/material.dart';
+                    import 'package:compose_state/compose_state.dart';
+
+                    // Persistent states that automatically save to SharedPreferences
+                    final themeMode = persistableStateOf&lt;String&gt;(
+                    'theme_mode',
+                    defaultValue: 'system',
+                    );
+
+                    final notificationsEnabled = persistableStateOf&lt;bool&gt;(
+                    'notifications_enabled',
+                    defaultValue: true,
+                    );
+
+                    final fontSize = persistableStateOf&lt;double&gt;(
+                    'font_size',
+                    defaultValue: 16.0,
+                    );
+
+                    class SettingsPage extends StatelessWidget {
+                    @override
+                    Widget build(BuildContext context) {
+                    return Scaffold(
+                    appBar: AppBar(
+                    title: Text('Settings'),
+                    backgroundColor: Colors.deepPurple,
+                    ),
+                    body: Padding(
+                    padding: EdgeInsets.all(16.0),
+                    child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                    // Theme Mode Setting
+                    Text('Theme Mode', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+                    SizedBox(height: 8),
+                    StateBuilder&lt;String&gt;(
+                    state: themeMode,
+                    builder: (context, mode) {
+                    return DropdownButtonFormField&lt;String&gt;(
+                    value: mode,
+                    decoration: InputDecoration(
+                    border: OutlineInputBorder(),
+                    contentPadding: EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                    ),
+                    onChanged: (newMode) => themeMode.value = newMode!,
+                    items: [
+                    DropdownMenuItem(value: 'light', child: Text('Light')),
+                    DropdownMenuItem(value: 'dark', child: Text('Dark')),
+                    DropdownMenuItem(value: 'system', child: Text('System')),
+                    ],
+                    );
+                    },
+                    ),
+
+                    SizedBox(height: 24),
+
+                    // Notifications Setting
+                    StateBuilder&lt;bool&gt;(
+                    state: notificationsEnabled,
+                    builder: (context, enabled) {
+                    return SwitchListTile(
+                    title: Text('Enable Notifications'),
+                    subtitle: Text('Receive push notifications'),
+                    value: enabled,
+                    onChanged: (value) => notificationsEnabled.value = value,
+                    activeColor: Colors.deepPurple,
+                    );
+                    },
+                    ),
+
+                    SizedBox(height: 16),
+
+                    // Font Size Setting
+                    Text('Font Size', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+                    SizedBox(height: 8),
+                    StateBuilder&lt;double&gt;(
+                    state: fontSize,
+                    builder: (context, size) {
+                    return Column(
+                    children: [
+                    Text(
+                    'Sample text with current font size',
+                    style: TextStyle(fontSize: size),
+                    ),
+                    SizedBox(height: 8),
+                    Slider(
+                    value: size,
+                    min: 12.0,
+                    max: 24.0,
+                    divisions: 12,
+                    label: '${size.round()}px',
+                    onChanged: (value) => fontSize.value = value,
+                    activeColor: Colors.deepPurple,
+                    ),
+                    Text('${size.round()}px'),
+                    ],
+                    );
+                    },
+                    ),
+                    ],
+                    ),
+                    ),
+                    );
+                    }
+                    }</div>
+
+                <div class="highlight">
+                    <strong>Key Features:</strong>
+                    <ul>
+                        <li><code>persistableStateOf()</code> - Automatic persistence to SharedPreferences</li>
+                        <li>Type-safe serialization for different data types</li>
+                        <li>Automatic restoration on app restart</li>
+                        <li>No manual save/load operations needed</li>
+                    </ul>
+                </div>
+            </div>
+            <div id="form-validation" class="example-container">
+                <div class="example-title">
+                    Form Validation with Derived State
+                    <span class="complexity-badge simple">Simple</span>
+                </div>
+
+                <p>Real-time form validation using derived state that automatically updates based on input changes.</p>
+
+                <div class="code-block" data-lang="dart">
+                    import 'package:flutter/material.dart';
+                    import 'package:compose_state/compose_state.dart';
+
+                    // Form field states
+                    final email = mutableStateOf('');
+                    final password = mutableStateOf('');
+                    final confirmPassword = mutableStateOf('');
+
+                    // Validation derived states
+                    final isEmailValid = derivedStateOf(() {
+                    final emailRegex = RegExp(r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$');
+                    return emailRegex.hasMatch(email.value);
+                    });
+
+                    final isPasswordValid = derivedStateOf(() {
+                    return password.value.length >= 8;
+                    });
+
+                    final doPasswordsMatch = derivedStateOf(() {
+                    return password.value == confirmPassword.value && confirmPassword.value.isNotEmpty;
+                    });
+
+                    final isFormValid = derivedStateOf(() {
+                    return isEmailValid.value && isPasswordValid.value && doPasswordsMatch.value;
+                    });
+
+                    class RegistrationForm extends StatelessWidget {
+                    @override
+                    Widget build(BuildContext context) {
+                    return Scaffold(
+                    appBar: AppBar(
+                    title: Text('Registration'),
+                    backgroundColor: Colors.green,
+                    ),
+                    body: Padding(
+                    padding: EdgeInsets.all(16.0),
+                    child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.stretch,
+                    children: [
+                    // Email Field
+                    StateBuilder&lt;String&gt;(
+                    state: email,
+                    builder: (context, emailValue) {
+                    return StateBuilder&lt;bool&gt;(
+                    state: isEmailValid,
+                    builder: (context, isValid) {
+                    return TextFormField(
+                    decoration: InputDecoration(
+                    labelText: 'Email',
+                    border: OutlineInputBorder(),
+                    suffixIcon: emailValue.isNotEmpty
+                    ? Icon(
+                    isValid ? Icons.check_circle : Icons.error,
+                    color: isValid ? Colors.green : Colors.red,
+                    )
+                    : null,
+                    errorText: emailValue.isNotEmpty && !isValid
+                    ? 'Please enter a valid email'
+                    : null,
+                    ),
+                    onChanged: (value) => email.value = value,
+                    keyboardType: TextInputType.emailAddress,
+                    );
+                    },
+                    );
+                    },
+                    ),
+
+                    SizedBox(height: 16),
+
+                    // Password Field
+                    StateBuilder&lt;String&gt;(
+                    state: password,
+                    builder: (context, passwordValue) {
+                    return StateBuilder&lt;bool&gt;(
+                    state: isPasswordValid,
+                    builder: (context, isValid) {
+                    return TextFormField(
+                    decoration: InputDecoration(
+                    labelText: 'Password',
+                    border: OutlineInputBorder(),
+                    suffixIcon: passwordValue.isNotEmpty
+                    ? Icon(
+                    isValid ? Icons.check_circle : Icons.error,
+                    color: isValid ? Colors.green : Colors.red,
+                    )
+                    : null,
+                    errorText: passwordValue.isNotEmpty && !isValid
+                    ? 'Password must be at least 8 characters'
+                    : null,
+                    ),
+                    onChanged: (value) => password.value = value,
+                    obscureText: true,
+                    );
+                    },
+                    );
+                    },
+                    ),
+
+                    SizedBox(height: 16),
+
+                    // Confirm Password Field
+                    StateBuilder&lt;String&gt;(
+                    state: confirmPassword,
+                    builder: (context, confirmValue) {
+                    return StateBuilder&lt;bool&gt;(
+                    state: doPasswordsMatch,
+                    builder: (context, doMatch) {
+                    return TextFormField(
+                    decoration: InputDecoration(
+                    labelText: 'Confirm Password',
+                    border: OutlineInputBorder(),
+                    suffixIcon: confirmValue.isNotEmpty
+                    ? Icon(
+                    doMatch ? Icons.check_circle : Icons.error,
+                    color: doMatch ? Colors.green : Colors.red,
+                    )
+                    : null,
+                    errorText: confirmValue.isNotEmpty && !doMatch
+                    ? 'Passwords do not match'
+                    : null,
+                    ),
+                    onChanged: (value) => confirmPassword.value = value,
+                    obscureText: true,
+                    );
+                    },
+                    );
+                    },
+                    ),
+
+                    SizedBox(height: 24),
+
+                    // Submit Button
+                    StateBuilder&lt;bool&gt;(
+                    state: isFormValid,
+                    builder: (context, isValid) {
+                    return ElevatedButton(
+                    onPressed: isValid ? _handleSubmit : null,
+                    style: ElevatedButton.styleFrom(
+                    backgroundColor: Colors.green,
+                    padding: EdgeInsets.symmetric(vertical: 16),
+                    ),
+                    child: Text(
+                    'Register',
+                    style: TextStyle(fontSize: 16, color: Colors.white),
+                    ),
+                    );
+                    },
+                    ),
+                    ],
+                    ),
+                    ),
+                    );
+                    }
+
+                    void _handleSubmit() {
+                    // Handle form submission
+                    print('Form submitted with email: ${email.value}');
+                    }
+                    }</div>
+
+                <div class="highlight">
+                    <strong>Key Concepts:</strong>
+                    <ul>
+                        <li><code>derivedStateOf()</code> - Computed state that updates automatically</li>
+                        <li>Real-time validation without manual state management</li>
+                        <li>Reactive UI updates based on validation state</li>
+                        <li>Clean separation of validation logic</li>
+                    </ul>
+                </div>
+            </div>
+        </section>
+        <section id="intermediate-examples" class="section">
+            <h2><span class="icon">⚡</span>Intermediate Examples</h2>
+
+            <div id="api-integration" class="example-container">
+                <div class="example-title">
+                    API Integration with Error Handling
+                    <span class="complexity-badge intermediate">Intermediate</span>
+                </div>
+
+                <p>Fetching data from APIs with comprehensive error handling, loading states, and retry mechanisms.</p>
+
+                <div class="code-block" data-lang="dart">
+                    import 'package:flutter/material.dart';
+                    import 'package:compose_state/compose_state.dart';
+                    import 'package:http/http.dart' as http;
+                    import 'dart:convert';
+
+                    // User model
+                    class User {
+                    final int id;
+                    final String name;
+                    final String email;
+                    final String avatar;
+
+                    User({required this.id, required this.name, required this.email, required this.avatar});
+
+                    factory User.fromJson(Map&lt;String, dynamic&gt; json) {
+                    return User(
+                    id: json['id'],
+                    name: json['name'],
+                    email: json['email'],
+                    avatar: json['avatar'] ?? 'https://via.placeholder.com/150',
+                    );
+                    }
+                    }
+
+                    // API Service
+                    class ApiService {
+                    static Future&lt;List&lt;User&gt;&gt; fetchUsers() async {
+                    await Future.delayed(Duration(seconds: 2)); // Simulate network delay
+
+                    final response = await http.get(
+                    Uri.parse('https://jsonplaceholder.typicode.com/users'),
+                    );
+
+                    if (response.statusCode == 200) {
+                    final List&lt;dynamic&gt; jsonList = json.decode(response.body);
+                    return jsonList.map((json) =&gt; User.fromJson(json)).toList();
+                    } else {
+                    throw Exception('Failed to load users: ${response.statusCode}');
+                    }
+                    }
+                    }
+
+                    // API State with error handling
+                    final usersState = apiStateOf&lt;List&lt;User&gt;&gt;(
+                    () =&gt; ApiService.fetchUsers(),
+                    errorHandler: StateErrorHandler(
+                    defaultStrategy: RetryStrategy(
+                    maxAttempts: 3,
+                    backoffMultiplier: 2.0,
+                    ),
+                    ),
+                    );
+
+                    class UserListPage extends StatelessWidget {
+                    @override
+                    Widget build(BuildContext context) {
+                    return Scaffold(
+                    appBar: AppBar(
+                    title: Text('Users'),
+                    backgroundColor: Colors.orange,
+                    actions: [
+                    IconButton(
+                    icon: Icon(Icons.refresh),
+                    onPressed: () =&gt; usersState.refresh(),
+                    ),
+                    ],
+                    ),
+                    body: StateBuilder&lt;ApiStateData&lt;List&lt;User&gt;&gt;&gt;(
+                    state: usersState,
+                    builder: (context, apiData) {
+                    // Loading State
+                    if (apiData.isLoading) {
+                    return Center(
+                    child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                    CircularProgressIndicator(color: Colors.orange),
+                    SizedBox(height: 16),
+                    Text('Loading users...'),
+                    ],
+                    ),
+                    );
+                    }
+
+                    // Error State
+                    if (apiData.hasError) {
+                    return Center(
+                    child: Padding(
+                    padding: EdgeInsets.all(16.0),
+                    child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                    Icon(Icons.error_outline, size: 64, color: Colors.red),
+                    SizedBox(height: 16),
+                    Text(
+                    'Error loading users',
+                    style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                    ),
+                    SizedBox(height: 8),
+                    Text(
+                    apiData.error.toString(),
+                    textAlign: TextAlign.center,
+                    style: TextStyle(color: Colors.grey[600]),
+                    ),
+                    SizedBox(height: 24),
+                    Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                    ElevatedButton.icon(
+                    onPressed: () =&gt; usersState.refresh(),
+                    icon: Icon(Icons.refresh),
+                    label: Text('Retry'),
+                    style: ElevatedButton.styleFrom(backgroundColor: Colors.orange),
+                    ),
+                    SizedBox(width: 16),
+                    TextButton(
+                    onPressed: () =&gt; usersState.clearError(),
+                    child: Text('Dismiss'),
+                    ),
+                    ],
+                    ),
+                    ],
+                    ),
+                    ),
+                    );
+                    }
+
+                    // Success State
+                    final users = apiData.data!;
+                    return RefreshIndicator(
+                    onRefresh: () async =&gt; usersState.refresh(),
+                    child: ListView.builder(
+                    itemCount: users.length,
+                    itemBuilder: (context, index) {
+                    final user = users[index];
+                    return Card(
+                    margin: EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                    child: ListTile(
+                    leading: CircleAvatar(
+                    backgroundImage: NetworkImage(user.avatar),
+                    onBackgroundImageError: (_, __) =&gt; {},
+                    child: user.avatar.isEmpty ? Icon(Icons.person) : null,
+                    ),
+                    title: Text(
+                    user.name,
+                    style: TextStyle(fontWeight: FontWeight.bold),
+                    ),
+                    subtitle: Text(user.email),
+                    trailing: Icon(Icons.arrow_forward_ios),
+                    onTap: () {
+                    // Navigate to user details
+                    ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(content: Text('Tapped on ${user.name}')),
+                    );
+                    },
+                    ),
+                    );
+                    },
+                    ),
+                    );
+                    },
+                    ),
+                    );
+                    }
+                    }</div>
+
+                <div class="highlight">
+                    <strong>Advanced Features:</strong>
+                    <ul>
+                        <li><code>apiStateOf()</code> - Handles async operations with loading/error states</li>
+                        <li>Automatic retry mechanism with exponential backoff</li>
+                        <li>Pull-to-refresh functionality</li>
+                        <li>Comprehensive error handling and user feedback</li>
+                        <li>Network request caching and optimization</li>
+                    </ul>
+                </div>
+            </div>
+            <div id="shopping-cart" class="example-container">
+                <div class="example-title">
+                    Shopping Cart with Complex State
+                    <span class="complexity-badge intermediate">Intermediate</span>
+                </div>
+
+                <p>A shopping cart implementation demonstrating complex state management with derived calculations.</p>
+
+                <div class="code-block" data-lang="dart">
+                    import 'package:flutter/material.dart';
+                    import 'package:compose_state/compose_state.dart';
+
+                    // Product model
+                    class Product {
+                    final String id;
+                    final String name;
+                    final double price;
+                    final String image;
+                    final String description;
+
+                    Product({
+                    required this.id,
+                    required this.name,
+                    required this.price,
+                    required this.image,
+                    required this.description,
+                    });
+                    }
+
+                    // Cart item model
+                    class CartItem {
+                    final Product product;
+                    final int quantity;
+
+                    CartItem({required this.product, required this.quantity});
+
+                    CartItem copyWith({int? quantity}) {
+                    return CartItem(
+                    product: product,
+                    quantity: quantity ?? this.quantity,
+                    );
+                    }
+
+                    double get totalPrice =&gt; product.price * quantity;
+                    }
+
+                    // Sample products
+                    final sampleProducts = [
+                    Product(id: '1', name: 'Laptop', price: 999.99, image: '💻', description: 'High-performance
+                    laptop'),
+                    Product(id: '2', name: 'Phone', price: 699.99, image: '📱', description: 'Latest smartphone'),
+                    Product(id: '3', name: 'Headphones', price: 199.99, image: '🎧', description: 'Wireless
+                    headphones'),
+                    Product(id: '4', name: 'Watch', price: 299.99, image: '⌚', description: 'Smart watch'),
+                    ];
+
+                    // Cart state
+                    final cartItems = mutableStateOf&lt;List&lt;CartItem&gt;&gt;([]);
+
+                    // Derived states for calculations
+                    final cartItemCount = derivedStateOf(() {
+                    return cartItems.value.fold&lt;int&gt;(0, (sum, item) =&gt; sum + item.quantity);
+                    });
+
+                    final cartSubtotal = derivedStateOf(() {
+                    return cartItems.value.fold&lt;double&gt;(0, (sum, item) =&gt; sum + item.totalPrice);
+                    });
+
+                    final cartTax = derivedStateOf(() {
+                    return cartSubtotal.value * 0.08; // 8% tax
+                    });
+
+                    final cartTotal = derivedStateOf(() {
+                    return cartSubtotal.value + cartTax.value;
+                    });
+
+                    final isCartEmpty = derivedStateOf(() {
+                    return cartItems.value.isEmpty;
+                    });
+
+                    // Cart operations
+                    class CartService {
+                    static void addToCart(Product product) {
+                    final currentItems = List&lt;CartItem&gt;.from(cartItems.value);
+                    final existingIndex = currentItems.indexWhere((item) =&gt; item.product.id == product.id);
+
+                    if (existingIndex != -1) {
+                    // Update quantity if item exists
+                    currentItems[existingIndex] = currentItems[existingIndex].copyWith(
+                    quantity: currentItems[existingIndex].quantity + 1,
+                    );
+                    } else {
+                    // Add new item
+                    currentItems.add(CartItem(product: product, quantity: 1));
+                    }
+
+                    cartItems.value = currentItems;
+                    }
+
+                    static void removeFromCart(String productId) {
+                    cartItems.value = cartItems.value.where((item) =&gt; item.product.id != productId).toList();
+                    }
+
+                    static void updateQuantity(String productId, int quantity) {
+                    if (quantity &lt;= 0) {
+                    removeFromCart(productId);
+                    return;
+                    }
+
+                    final currentItems = List&lt;CartItem&gt;.from(cartItems.value);
+                    final index = currentItems.indexWhere((item) =&gt; item.product.id == productId);
+
+                    if (index != -1) {
+                    currentItems[index] = currentItems[index].copyWith(quantity: quantity);
+                    cartItems.value = currentItems;
+                    }
+                    }
+
+                    static void clearCart() {
+                    cartItems.value = [];
+                    }
+                    }
+
+                    class ShoppingApp extends StatelessWidget {
+                    @override
+                    Widget build(BuildContext context) {
+                    return MaterialApp(
+                    home: DefaultTabController(
+                    length: 2,
+                    child: Scaffold(
+                    appBar: AppBar(
+                    title: Text('Shopping App'),
+                    backgroundColor: Colors.purple,
+                    bottom: TabBar(
+                    tabs: [
+                    Tab(icon: Icon(Icons.store), text: 'Products'),
+                    Tab(
+                    icon: StateBuilder&lt;int&gt;(
+                    state: cartItemCount,
+                    builder: (context, count) {
+                    return Badge(
+                    label: Text('$count'),
+                    isLabelVisible: count &gt; 0,
+                    child: Icon(Icons.shopping_cart),
+                    );
+                    },
+                    ),
+                    text: 'Cart',
+                    ),
+                    ],
+                    ),
+                    ),
+                    body: TabBarView(
+                    children: [
+                    ProductsTab(),
+                    CartTab(),
+                    ],
+                    ),
+                    ),
+                    ),
+                    );
+                    }
+                    }
+
+                    class ProductsTab extends StatelessWidget {
+                    @override
+                    Widget build(BuildContext context) {
+                    return GridView.builder(
+                    padding: EdgeInsets.all(16),
+                    gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                    crossAxisCount: 2,
+                    childAspectRatio: 0.8,
+                    crossAxisSpacing: 16,
+                    mainAxisSpacing: 16,
+                    ),
+                    itemCount: sampleProducts.length,
+                    itemBuilder: (context, index) {
+                    final product = sampleProducts[index];
+                    return Card(
+                    elevation: 4,
+                    child: Padding(
+                    padding: EdgeInsets.all(12),
+                    child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                    Center(
+                    child: Text(
+                    product.image,
+                    style: TextStyle(fontSize: 48),
+                    ),
+                    ),
+                    SizedBox(height: 8),
+                    Text(
+                    product.name,
+                    style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
+                    ),
+                    Text(
+                    product.description,
+                    style: TextStyle(color: Colors.grey[600], fontSize: 12),
+                    maxLines: 2,
+                    overflow: TextOverflow.ellipsis,
+                    ),
+                    Spacer(),
+                    Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                    Text(
+                    '\$${product.price.toStringAsFixed(2)}',
+                    style: TextStyle(
+                    fontWeight: FontWeight.bold,
+                    fontSize: 16,
+                    color: Colors.purple,
+                    ),
+                    ),
+                    ElevatedButton(
+                    onPressed: () {
+                    CartService.addToCart(product);
+                    ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(
+                    content: Text('${product.name} added to cart'),
+                    duration: Duration(seconds: 1),
+                    ),
+                    );
+                    },
+                    style: ElevatedButton.styleFrom(
+                    backgroundColor: Colors.purple,
+                    minimumSize: Size(60, 30),
+                    ),
+                    child: Icon(Icons.add, color: Colors.white),
+                    ),
+                    ],
+                    ),
+                    ],
+                    ),
+                    ),
+                    );
+                    },
+                    );
+                    }
+                    }
+
+                    class CartTab extends StatelessWidget {
+                    @override
+                    Widget build(BuildContext context) {
+                    return StateBuilder&lt;List&lt;CartItem&gt;&gt;(
+                    state: cartItems,
+                    builder: (context, items) {
+                    if (items.isEmpty) {
+                    return Center(
+                    child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                    Icon(Icons.shopping_cart_outlined, size: 64, color: Colors.grey),
+                    SizedBox(height: 16),
+                    Text(
+                    'Your cart is empty',
+                    style: TextStyle(fontSize: 18, color: Colors.grey),
+                    ),
+                    SizedBox(height: 8),
+                    Text(
+                    'Add some products to get started',
+                    style: TextStyle(color: Colors.grey[600]),
+                    ),
+                    ],
+                    ),
+                    );
+                    }
+
+                    return Column(
+                    children: [
+                    Expanded(
+                    child: ListView.builder(
+                    itemCount: items.length,
+                    itemBuilder: (context, index) {
+                    final item = items[index];
+                    return Card(
+                    margin: EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                    child: Padding(
+                    padding: EdgeInsets.all(12),
+                    child: Row(
+                    children: [
+                    Text(item.product.image, style: TextStyle(fontSize: 32)),
+                    SizedBox(width: 12),
+                    Expanded(
+                    child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                    Text(
+                    item.product.name,
+                    style: TextStyle(fontWeight: FontWeight.bold),
+                    ),
+                    Text(
+                    '\$${item.product.price.toStringAsFixed(2)} each',
+                    style: TextStyle(color: Colors.grey[600]),
+                    ),
+                    ],
+                    ),
+                    ),
+                    Row(
+                    children: [
+                    IconButton(
+                    onPressed: () =&gt; CartService.updateQuantity(
+                    item.product.id,
+                    item.quantity - 1,
+                    ),
+                    icon: Icon(Icons.remove),
+                    ),
+                    Text(
+                    '${item.quantity}',
+                    style: TextStyle(fontWeight: FontWeight.bold),
+                    ),
+                    IconButton(
+                    onPressed: () =&gt; CartService.updateQuantity(
+                    item.product.id,
+                    item.quantity + 1,
+                    ),
+                    icon: Icon(Icons.add),
+                    ),
+                    ],
+                    ),
+                    Text(
+                    '\$${item.totalPrice.toStringAsFixed(2)}',
+                    style: TextStyle(
+                    fontWeight: FontWeight.bold,
+                    color: Colors.purple,
+                    ),
+                    ),
+                    ],
+                    ),
+                    ),
+                    );
+                    },
+                    ),
+                    ),
+                    Container(
+                    padding: EdgeInsets.all(16),
+                    decoration: BoxDecoration(
+                    color: Colors.grey[100],
+                    border: Border(top: BorderSide(color: Colors.grey[300]!)),
+                    ),
+                    child: Column(
+                    children: [
+                    Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                    Text('Subtotal:'),
+                    StateBuilder&lt;double&gt;(
+                    state: cartSubtotal,
+                    builder: (context, subtotal) {
+                    return Text('\$${subtotal.toStringAsFixed(2)}');
+                    },
+                    ),
+                    ],
+                    ),
+                    Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                    Text('Tax (8%):'),
+                    StateBuilder&lt;double&gt;(
+                    state: cartTax,
+                    builder: (context, tax) {
+                    return Text('\$${tax.toStringAsFixed(2)}');
+                    },
+                    ),
+                    ],
+                    ),
+                    Divider(),
+                    Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                    Text(
+                    'Total:',
+                    style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                    ),
+                    StateBuilder&lt;double&gt;(
+                    state: cartTotal,
+                    builder: (context, total) {
+                    return Text(
+                    '\$${total.toStringAsFixed(2)}',
+                    style: TextStyle(
+                    fontSize: 18,
+                    fontWeight: FontWeight.bold,
+                    color: Colors.purple,
+                    ),
+                    );
+                    },
+                    ),
+                    ],
+                    ),
+                    SizedBox(height: 16),
+                    Row(
+                    children: [
+                    Expanded(
+                    child: OutlinedButton(
+                    onPressed: () =&gt; CartService.clearCart(),
+                    child: Text('Clear Cart'),
+                    ),
+                    ),
+                    SizedBox(width: 16),
+                    Expanded(
+                    flex: 2,
+                    child: ElevatedButton(
+                    onPressed: () {
+                    // Handle checkout
+                    ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(content: Text('Checkout functionality would go here')),
+                    );
+                    },
+                    style: ElevatedButton.styleFrom(
+                    backgroundColor: Colors.purple,
+                    padding: EdgeInsets.symmetric(vertical: 16),
+                    ),
+                    child: Text('Checkout', style: TextStyle(color: Colors.white)),
+                    ),
+                    ),
+                    ],
+                    ),
+                    ],
+                    ),
+                    ),
+                    ],
+                    );
+                    },
+                    );
+                    }
+                    }</div>
+
+                <div class="highlight">
+                    <strong>Complex State Features:</strong>
+                    <ul>
+                        <li>Multiple derived states for automatic calculations</li>
+                        <li>Complex state updates with immutable patterns</li>
+                        <li>Real-time UI updates across multiple components</li>
+                        <li>State persistence and restoration</li>
+                        <li>Optimized performance with selective rebuilds</li>
+                    </ul>
+                </div>
+            </div>
+        </section>
+        <section id="advanced-examples" class="section">
+            <h2><span class="icon">🏗️</span>Advanced Examples</h2>
+
+            <div id="real-time-chat" class="example-container">
+                <div class="example-title">
+                    Real-time Chat Application
+                    <span class="complexity-badge advanced">Advanced</span>
+                </div>
+
+                <p>A complete real-time chat application demonstrating stream state, transactions, and complex UI
+                    patterns.</p>
+
+                <div class="code-block" data-lang="dart">
+                    import 'package:flutter/material.dart';
+                    import 'package:compose_state/compose_state.dart';
+                    import 'dart:async';
+
+                    // Message model
+                    class ChatMessage {
+                    final String id;
+                    final String userId;
+                    final String userName;
+                    final String content;
+                    final DateTime timestamp;
+                    final MessageType type;
+
+                    ChatMessage({
+                    required this.id,
+                    required this.userId,
+                    required this.userName,
+                    required this.content,
+                    required this.timestamp,
+                    this.type = MessageType.text,
+                    });
+                    }
+
+                    enum MessageType { text, image, system }
+
+                    // Chat room model
+                    class ChatRoom {
+                    final String id;
+                    final String name;
+                    final List&lt;String&gt; participants;
+                    final DateTime lastActivity;
+
+                    ChatRoom({
+                    required this.id,
+                    required this.name,
+                    required this.participants,
+                    required this.lastActivity,
+                    });
+                    }
+
+                    // User model
+                    class ChatUser {
+                    final String id;
+                    final String name;
+                    final String avatar;
+                    final bool isOnline;
+
+                    ChatUser({
+                    required this.id,
+                    required this.name,
+                    required this.avatar,
+                    required this.isOnline,
+                    });
+                    }
+
+                    // Mock chat service
+                    class ChatService {
+                    static final _messageController = StreamController&lt;ChatMessage&gt;.broadcast();
+                    static final _userController = StreamController&lt;List&lt;ChatUser&gt;&gt;.broadcast();
+
+                    static Stream&lt;ChatMessage&gt; get messageStream =&gt; _messageController.stream;
+                    static Stream&lt;List&lt;ChatUser&gt;&gt; get usersStream =&gt; _userController.stream;
+
+                    static void sendMessage(String content, String userId, String userName) {
+                    final message = ChatMessage(
+                    id: DateTime.now().millisecondsSinceEpoch.toString(),
+                    userId: userId,
+                    userName: userName,
+                    content: content,
+                    timestamp: DateTime.now(),
+                    );
+                    _messageController.add(message);
+                    }
+
+                    static void simulateIncomingMessages() {
+                    Timer.periodic(Duration(seconds: 10), (timer) {
+                    final messages = [
+                    'Hello everyone! 👋',
+                    'How is everyone doing?',
+                    'Great weather today!',
+                    'Anyone working on Flutter projects?',
+                    'Check out this new feature!',
+                    ];
+
+                    final message = ChatMessage(
+                    id: DateTime.now().millisecondsSinceEpoch.toString(),
+                    userId: 'bot',
+                    userName: 'ChatBot',
+                    content: messages[DateTime.now().second % messages.length],
+                    timestamp: DateTime.now(),
+                    );
+                    _messageController.add(message);
+                    });
+                    }
+                    }
+
+                    // Current user state
+                    final currentUser = mutableStateOf(ChatUser(
+                    id: 'user1',
+                    name: 'You',
+                    avatar: '👤',
+                    isOnline: true,
+                    ));
+
+                    // Messages state using StreamState
+                    final messagesStream = streamStateOf&lt;ChatMessage&gt;(
+                    ChatService.messageStream,
+                    initialValue: null,
+                    );
+
+                    // Accumulated messages state
+                    final allMessages = mutableStateOf&lt;List&lt;ChatMessage&gt;&gt;([]);
+
+                    // Online users state
+                    final onlineUsers = streamStateOf&lt;List&lt;ChatUser&gt;&gt;(
+                    ChatService.usersStream,
+                    initialValue: &lt;ChatUser&gt;[],
+                    );
+
+                    // Typing indicator state
+                    final typingUsers = mutableStateOf&lt;Set&lt;String&gt;&gt;({});
+
+                    // Unread message count
+                    final unreadCount = mutableStateOf(0);
+
+                    // Message input state
+                    final messageInput = mutableStateOf('');
+
+                    // Derived states
+                    final isTyping = derivedStateOf(() =&gt; messageInput.value.isNotEmpty);
+
+                    final sortedMessages = derivedStateOf(() {
+                    final messages = List&lt;ChatMessage&gt;.from(allMessages.value);
+                    messages.sort((a, b) =&gt; a.timestamp.compareTo(b.timestamp));
+                    return messages;
+                    });
+
+                    class ChatApp extends StatefulWidget {
+                    @override
+                    _ChatAppState createState() =&gt; _ChatAppState();
+                    }
+
+                    class _ChatAppState extends State&lt;ChatApp&gt; {
+                    final ScrollController _scrollController = ScrollController();
+
+                    @override
+                    void initState() {
+                    super.initState();
+
+                    // Listen to new messages and add them to the list
+                    messagesStream.addListener(() {
+                    final newMessage = messagesStream.value;
+                    if (newMessage != null) {
+                    final currentMessages = List&lt;ChatMessage&gt;.from(allMessages.value);
+                    currentMessages.add(newMessage);
+                    allMessages.value = currentMessages;
+
+                    // Auto-scroll to bottom
+                    WidgetsBinding.instance.addPostFrameCallback((_) {
+                    if (_scrollController.hasClients) {
+                    _scrollController.animateTo(
+                    _scrollController.position.maxScrollExtent,
+                    duration: Duration(milliseconds: 300),
+                    curve: Curves.easeOut,
+                    );
+                    }
+                    });
+                    }
+                    });
+
+                    // Start simulating messages
+                    ChatService.simulateIncomingMessages();
+                    }
+
+                    @override
+                    Widget build(BuildContext context) {
+                    return MaterialApp(
+                    home: Scaffold(
+                    appBar: AppBar(
+                    title: Text('Chat Room'),
+                    backgroundColor: Colors.teal,
+                    actions: [
+                    StateBuilder&lt;List&lt;ChatUser&gt;&gt;(
+                    state: onlineUsers,
+                    builder: (context, users) {
+                    return Padding(
+                    padding: EdgeInsets.symmetric(horizontal: 16),
+                    child: Center(
+                    child: Text('${users.length} online'),
+                    ),
+                    );
+                    },
+                    ),
+                    ],
+                    ),
+                    body: Column(
+                    children: [
+                    // Typing indicator
+                    StateBuilder&lt;Set&lt;String&gt;&gt;(
+                    state: typingUsers,
+                    builder: (context, typing) {
+                    if (typing.isEmpty) return SizedBox.shrink();
+
+                    return Container(
+                    padding: EdgeInsets.all(8),
+                    color: Colors.grey[100],
+                    child: Row(
+                    children: [
+                    SizedBox(
+                    width: 20,
+                    height: 20,
+                    child: CircularProgressIndicator(strokeWidth: 2),
+                    ),
+                    SizedBox(width: 8),
+                    Text(
+                    '${typing.join(', ')} ${typing.length == 1 ? 'is' : 'are'} typing...',
+                    style: TextStyle(fontStyle: FontStyle.italic),
+                    ),
+                    ],
+                    ),
+                    );
+                    },
+                    ),
+
+                    // Messages list
+                    Expanded(
+                    child: StateBuilder&lt;List&lt;ChatMessage&gt;&gt;(
+                    state: sortedMessages,
+                    builder: (context, messages) {
+                    if (messages.isEmpty) {
+                    return Center(
+                    child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                    Icon(Icons.chat_bubble_outline, size: 64, color: Colors.grey),
+                    SizedBox(height: 16),
+                    Text(
+                    'No messages yet',
+                    style: TextStyle(fontSize: 18, color: Colors.grey),
+                    ),
+                    Text(
+                    'Start the conversation!',
+                    style: TextStyle(color: Colors.grey[600]),
+                    ),
+                    ],
+                    ),
+                    );
+                    }
+
+                    return ListView.builder(
+                    controller: _scrollController,
+                    padding: EdgeInsets.all(16),
+                    itemCount: messages.length,
+                    itemBuilder: (context, index) {
+                    final message = messages[index];
+                    final isCurrentUser = message.userId == currentUser.value.id;
+
+                    return Padding(
+                    padding: EdgeInsets.symmetric(vertical: 4),
+                    child: Row(
+                    mainAxisAlignment: isCurrentUser
+                    ? MainAxisAlignment.end
+                    : MainAxisAlignment.start,
+                    children: [
+                    if (!isCurrentUser) ...[
+                    CircleAvatar(
+                    radius: 16,
+                    child: Text(message.userName[0]),
+                    ),
+                    SizedBox(width: 8),
+                    ],
+                    Flexible(
+                    child: Container(
+                    padding: EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                    decoration: BoxDecoration(
+                    color: isCurrentUser ? Colors.teal : Colors.grey[200],
+                    borderRadius: BorderRadius.circular(20),
+                    ),
+                    child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                    if (!isCurrentUser)
+                    Text(
+                    message.userName,
+                    style: TextStyle(
+                    fontWeight: FontWeight.bold,
+                    fontSize: 12,
+                    color: Colors.teal,
+                    ),
+                    ),
+                    Text(
+                    message.content,
+                    style: TextStyle(
+                    color: isCurrentUser ? Colors.white : Colors.black87,
+                    ),
+                    ),
+                    SizedBox(height: 4),
+                    Text(
+                    _formatTime(message.timestamp),
+                    style: TextStyle(
+                    fontSize: 10,
+                    color: isCurrentUser
+                    ? Colors.white70
+                    : Colors.grey[600],
+                    ),
+                    ),
+                    ],
+                    ),
+                    ),
+                    ),
+                    if (isCurrentUser) ...[
+                    SizedBox(width: 8),
+                    CircleAvatar(
+                    radius: 16,
+                    backgroundColor: Colors.teal,
+                    child: Text(
+                    message.userName[0],
+                    style: TextStyle(color: Colors.white),
+                    ),
+                    ),
+                    ],
+                    ],
+                    ),
+                    );
+                    },
+                    );
+                    },
+                    ),
+                    ),
+
+                    // Message input
+                    Container(
+                    padding: EdgeInsets.all(16),
+                    decoration: BoxDecoration(
+                    color: Colors.white,
+                    border: Border(top: BorderSide(color: Colors.grey[300]!)),
+                    ),
+                    child: Row(
+                    children: [
+                    Expanded(
+                    child: StateBuilder&lt;String&gt;(
+                    state: messageInput,
+                    builder: (context, input) {
+                    return TextField(
+                    decoration: InputDecoration(
+                    hintText: 'Type a message...',
+                    border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(25),
+                    ),
+                    contentPadding: EdgeInsets.symmetric(
+                    horizontal: 16,
+                    vertical: 12,
+                    ),
+                    ),
+                    onChanged: (value) =&gt; messageInput.value = value,
+                    onSubmitted: (_) =&gt; _sendMessage(),
+                    );
+                    },
+                    ),
+                    ),
+                    SizedBox(width: 8),
+                    StateBuilder&lt;String&gt;(
+                    state: messageInput,
+                    builder: (context, input) {
+                    return FloatingActionButton(
+                    onPressed: input.trim().isEmpty ? null : _sendMessage,
+                    backgroundColor: input.trim().isEmpty ? Colors.grey : Colors.teal,
+                    mini: true,
+                    child: Icon(Icons.send, color: Colors.white),
+                    );
+                    },
+                    ),
+                    ],
+                    ),
+                    ),
+                    ],
+                    ),
+                    ),
+                    );
+                    }
+
+                    void _sendMessage() {
+                    final content = messageInput.value.trim();
+                    if (content.isNotEmpty) {
+                    ChatService.sendMessage(
+                    content,
+                    currentUser.value.id,
+                    currentUser.value.name,
+                    );
+                    messageInput.value = '';
+                    }
+                    }
+
+                    String _formatTime(DateTime time) {
+                    return '${time.hour.toString().padLeft(2, '0')}:${time.minute.toString().padLeft(2, '0')}';
+                    }
+
+                    @override
+                    void dispose() {
+                    _scrollController.dispose();
+                    super.dispose();
+                    }
+                    }</div>
+
+                <div class="highlight">
+                    <strong>Advanced Patterns:</strong>
+                    <ul>
+                        <li><code>streamStateOf()</code> - Real-time data from streams</li>
+                        <li>Complex state composition and derived calculations</li>
+                        <li>Automatic UI updates from multiple state sources</li>
+                        <li>Memory-efficient message handling</li>
+                        <li>Real-time typing indicators and presence</li>
+                        <li>Optimized scroll performance with large datasets</li>
+                    </ul>
+                </div>
+            </div>
+        </section>
+        <section id="architecture" class="section">
+            <h2><span class="icon">🏛️</span>Architecture Patterns</h2>
+
+            <div class="example-container">
+                <div class="example-title">
+                    Enterprise Application Architecture
+                    <span class="complexity-badge advanced">Advanced</span>
+                </div>
+
+                <p>A complete enterprise-grade architecture demonstrating best practices for large-scale applications.
+                </p>
+
+                <div class="code-block" data-lang="dart">
+                    // Domain Layer - Business Logic
+                    abstract class Repository&lt;T&gt; {
+                    Future&lt;List&lt;T&gt;&gt; getAll();
+                    Future&lt;T?&gt; getById(String id);
+                    Future&lt;T&gt; create(T entity);
+                    Future&lt;T&gt; update(T entity);
+                    Future&lt;void&gt; delete(String id);
+                    }
+
+                    class User {
+                    final String id;
+                    final String name;
+                    final String email;
+                    final UserRole role;
+                    final DateTime createdAt;
+
+                    User({
+                    required this.id,
+                    required this.name,
+                    required this.email,
+                    required this.role,
+                    required this.createdAt,
+                    });
+                    }
+
+                    enum UserRole { admin, manager, employee }
+
+                    // Data Layer - Repository Implementation
+                    class UserRepository implements Repository&lt;User&gt; {
+                    final ApiClient _apiClient;
+                    final CacheManager _cache;
+
+                    UserRepository(this._apiClient, this._cache);
+
+                    @override
+                    Future&lt;List&lt;User&gt;&gt; getAll() async {
+                    // Try cache first
+                    final cached = await _cache.get&lt;List&lt;User&gt;&gt;('users');
+                    if (cached != null) return cached;
+
+                    // Fetch from API
+                    final users = await _apiClient.get&lt;List&lt;User&gt;&gt;('/users');
+                    await _cache.set('users', users, duration: Duration(minutes: 5));
+                    return users;
+                    }
+
+                    @override
+                    Future&lt;User?&gt; getById(String id) async {
+                    return await _apiClient.get&lt;User&gt;('/users/$id');
+                    }
+
+                    @override
+                    Future&lt;User&gt; create(User user) async {
+                    final created = await _apiClient.post&lt;User&gt;('/users', user);
+                    await _cache.invalidate('users'); // Invalidate cache
+                    return created;
+                    }
+
+                    @override
+                    Future&lt;User&gt; update(User user) async {
+                    final updated = await _apiClient.put&lt;User&gt;('/users/${user.id}', user);
+                    await _cache.invalidate('users');
+                    return updated;
+                    }
+
+                    @override
+                    Future&lt;void&gt; delete(String id) async {
+                    await _apiClient.delete('/users/$id');
+                    await _cache.invalidate('users');
+                    }
+                    }
+
+                    // Application Layer - Use Cases
+                    class GetUsersUseCase {
+                    final UserRepository _repository;
+
+                    GetUsersUseCase(this._repository);
+
+                    Future&lt;List&lt;User&gt;&gt; execute({UserRole? filterByRole}) async {
+                    final users = await _repository.getAll();
+
+                    if (filterByRole != null) {
+                    return users.where((user) =&gt; user.role == filterByRole).toList();
+                    }
+
+                    return users;
+                    }
+                    }
+
+                    class CreateUserUseCase {
+                    final UserRepository _repository;
+                    final ValidationService _validator;
+
+                    CreateUserUseCase(this._repository, this._validator);
+
+                    Future&lt;User&gt; execute(CreateUserRequest request) async {
+                    // Validate input
+                    await _validator.validateCreateUser(request);
+
+                    // Create user
+                    final user = User(
+                    id: '', // Will be set by API
+                    name: request.name,
+                    email: request.email,
+                    role: request.role,
+                    createdAt: DateTime.now(),
+                    );
+
+                    return await _repository.create(user);
+                    }
+                    }
+
+                    // Presentation Layer - ViewModels
+                    class UserListViewModel extends ComposeViewModel with Persistable {
+                    final GetUsersUseCase _getUsersUseCase;
+                    final CreateUserUseCase _createUserUseCase;
+
+                    // States
+                    late final ApiState&lt;List&lt;User&gt;&gt; usersState;
+                    late final MutableState&lt;UserRole?&gt; selectedRoleFilter;
+                    late final MutableState&lt;String&gt; searchQuery;
+                    late final MutableState&lt;bool&gt; isCreatingUser;
+
+                    // Derived states
+                    late final DerivedState&lt;List&lt;User&gt;&gt; filteredUsers;
+                    late final DerivedState&lt;Map&lt;UserRole, int&gt;&gt; userCountByRole;
+
+                    UserListViewModel(this._getUsersUseCase, this._createUserUseCase) {
+                    _initializeStates();
+                    }
+
+                    void _initializeStates() {
+                    // Initialize states
+                    usersState = apiStateOf&lt;List&lt;User&gt;&gt;(
+                    () =&gt; _getUsersUseCase.execute(),
+                    errorHandler: StateErrorHandler(
+                    defaultStrategy: RetryStrategy(maxAttempts: 3),
+                    fallbackStrategy: FallbackStrategy(fallbackValue: &lt;User&gt;[]),
+                    ),
+                    );
+
+                    selectedRoleFilter = persistableStateOf&lt;UserRole?&gt;(
+                    'user_role_filter',
+                    defaultValue: null,
+                    );
+
+                    searchQuery = mutableStateOf('');
+                    isCreatingUser = mutableStateOf(false);
+
+                    // Derived states
+                    filteredUsers = derivedStateOf(() {
+                    final users = usersState.data ?? [];
+                    final query = searchQuery.value.toLowerCase();
+                    final roleFilter = selectedRoleFilter.value;
+
+                    return users.where((user) {
+                    final matchesSearch = query.isEmpty ||
+                    user.name.toLowerCase().contains(query) ||
+                    user.email.toLowerCase().contains(query);
+
+                    final matchesRole = roleFilter == null || user.role == roleFilter;
+
+                    return matchesSearch && matchesRole;
+                    }).toList();
+                    });
+
+                    userCountByRole = derivedStateOf(() {
+                    final users = usersState.data ?? [];
+                    final counts = &lt;UserRole, int&gt;{};
+
+                    for (final role in UserRole.values) {
+                    counts[role] = users.where((user) =&gt; user.role == role).length;
+                    }
+
+                    return counts;
+                    });
+                    }
+
+                    // Actions
+                    Future&lt;void&gt; refreshUsers() async {
+                    await usersState.refresh();
+                    }
+
+                    void setRoleFilter(UserRole? role) {
+                    selectedRoleFilter.value = role;
+                    }
+
+                    void setSearchQuery(String query) {
+                    searchQuery.value = query;
+                    }
+
+                    Future&lt;void&gt; createUser(CreateUserRequest request) async {
+                    isCreatingUser.value = true;
+
+                    try {
+                    await _createUserUseCase.execute(request);
+                    await refreshUsers(); // Refresh the list
+                    } catch (error) {
+                    // Handle error
+                    rethrow;
+                    } finally {
+                    isCreatingUser.value = false;
+                    }
+                    }
+
+                    @override
+                    void dispose() {
+                    usersState.dispose();
+                    selectedRoleFilter.dispose();
+                    searchQuery.dispose();
+                    isCreatingUser.dispose();
+                    filteredUsers.dispose();
+                    userCountByRole.dispose();
+                    super.dispose();
+                    }
+                    }
+
+                    // UI Layer - Screens
+                    class UserListScreen extends StatelessWidget {
+                    @override
+                    Widget build(BuildContext context) {
+                    final viewModel = ViewModelScope.of&lt;UserListViewModel&gt;(context);
+
+                    return Scaffold(
+                    appBar: AppBar(
+                    title: Text('Users'),
+                    backgroundColor: Colors.indigo,
+                    actions: [
+                    IconButton(
+                    icon: Icon(Icons.refresh),
+                    onPressed: () =&gt; viewModel.refreshUsers(),
+                    ),
+                    IconButton(
+                    icon: Icon(Icons.add),
+                    onPressed: () =&gt; _showCreateUserDialog(context, viewModel),
+                    ),
+                    ],
+                    ),
+                    body: Column(
+                    children: [
+                    // Search and filters
+                    Padding(
+                    padding: EdgeInsets.all(16),
+                    child: Column(
+                    children: [
+                    // Search bar
+                    StateBuilder&lt;String&gt;(
+                    state: viewModel.searchQuery,
+                    builder: (context, query) {
+                    return TextField(
+                    decoration: InputDecoration(
+                    hintText: 'Search users...',
+                    prefixIcon: Icon(Icons.search),
+                    border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(10),
+                    ),
+                    ),
+                    onChanged: viewModel.setSearchQuery,
+                    );
+                    },
+                    ),
+
+                    SizedBox(height: 16),
+
+                    // Role filter chips
+                    StateBuilder&lt;UserRole?&gt;(
+                    state: viewModel.selectedRoleFilter,
+                    builder: (context, selectedRole) {
+                    return StateBuilder&lt;Map&lt;UserRole, int&gt;&gt;(
+                    state: viewModel.userCountByRole,
+                    builder: (context, counts) {
+                    return Wrap(
+                    spacing: 8,
+                    children: [
+                    FilterChip(
+                    label: Text('All (${counts.values.fold(0, (a, b) =&gt; a + b)})'),
+                    selected: selectedRole == null,
+                    onSelected: (_) =&gt; viewModel.setRoleFilter(null),
+                    ),
+                    ...UserRole.values.map((role) {
+                    return FilterChip(
+                    label: Text('${role.name} (${counts[role] ?? 0})'),
+                    selected: selectedRole == role,
+                    onSelected: (_) =&gt; viewModel.setRoleFilter(role),
+                    );
+                    }),
+                    ],
+                    );
+                    },
+                    );
+                    },
+                    ),
+                    ],
+                    ),
+                    ),
+
+                    // User list
+                    Expanded(
+                    child: StateBuilder&lt;ApiStateData&lt;List&lt;User&gt;&gt;&gt;(
+                    state: viewModel.usersState,
+                    builder: (context, apiData) {
+                    if (apiData.isLoading) {
+                    return Center(child: CircularProgressIndicator());
+                    }
+
+                    if (apiData.hasError) {
+                    return Center(
+                    child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                    Icon(Icons.error, size: 64, color: Colors.red),
+                    SizedBox(height: 16),
+                    Text('Error loading users'),
+                    ElevatedButton(
+                    onPressed: () =&gt; viewModel.refreshUsers(),
+                    child: Text('Retry'),
+                    ),
+                    ],
+                    ),
+                    );
+                    }
+
+                    return StateBuilder&lt;List&lt;User&gt;&gt;(
+                    state: viewModel.filteredUsers,
+                    builder: (context, users) {
+                    if (users.isEmpty) {
+                    return Center(
+                    child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                    Icon(Icons.people_outline, size: 64, color: Colors.grey),
+                    SizedBox(height: 16),
+                    Text('No users found'),
+                    ],
+                    ),
+                    );
+                    }
+
+                    return ListView.builder(
+                    itemCount: users.length,
+                    itemBuilder: (context, index) {
+                    final user = users[index];
+                    return UserListItem(user: user);
+                    },
+                    );
+                    },
+                    );
+                    },
+                    ),
+                    ),
+                    ],
+                    ),
+                    );
+                    }
+
+                    void _showCreateUserDialog(BuildContext context, UserListViewModel viewModel) {
+                    // Implementation for create user dialog
+                    }
+                    }
+
+                    // Dependency Injection Setup
+                    class AppModule {
+                    static void setup() {
+                    // Register dependencies
+                    GetIt.instance.registerSingleton&lt;ApiClient&gt;(ApiClient());
+                    GetIt.instance.registerSingleton&lt;CacheManager&gt;(CacheManager());
+
+                    // Repositories
+                    GetIt.instance.registerFactory&lt;UserRepository&gt;(
+                    () =&gt; UserRepository(
+                    GetIt.instance&lt;ApiClient&gt;(),
+                    GetIt.instance&lt;CacheManager&gt;(),
+                    ),
+                    );
+
+                    // Use cases
+                    GetIt.instance.registerFactory&lt;GetUsersUseCase&gt;(
+                    () =&gt; GetUsersUseCase(GetIt.instance&lt;UserRepository&gt;()),
+                    );
+
+                    GetIt.instance.registerFactory&lt;CreateUserUseCase&gt;(
+                    () =&gt; CreateUserUseCase(
+                    GetIt.instance&lt;UserRepository&gt;(),
+                    GetIt.instance&lt;ValidationService&gt;(),
+                    ),
+                    );
+
+                    // ViewModels
+                    GetIt.instance.registerFactory&lt;UserListViewModel&gt;(
+                    () =&gt; UserListViewModel(
+                    GetIt.instance&lt;GetUsersUseCase&gt;(),
+                    GetIt.instance&lt;CreateUserUseCase&gt;(),
+                    ),
+                    );
+                    }
+                    }
+
+                    // Main App with ViewModelScope
+                    class EnterpriseApp extends StatelessWidget {
+                    @override
+                    Widget build(BuildContext context) {
+                    return MaterialApp(
+                    home: ViewModelScope(
+                    viewModels: {
+                    UserListViewModel: GetIt.instance&lt;UserListViewModel&gt;(),
+                    },
+                    child: UserListScreen(),
+                    ),
+                    );
+                    }
+                    }</div>
+
+                <div class="highlight">
+                    <strong>Enterprise Architecture Features:</strong>
+                    <ul>
+                        <li><strong>Clean Architecture</strong> - Separation of concerns with domain, data, and
+                            presentation layers</li>
+                        <li><strong>Dependency Injection</strong> - Loose coupling and testability</li>
+                        <li><strong>Repository Pattern</strong> - Abstracted data access</li>
+                        <li><strong>Use Cases</strong> - Encapsulated business logic</li>
+                        <li><strong>ViewModels</strong> - Centralized state management</li>
+                        <li><strong>Error Handling</strong> - Comprehensive error recovery</li>
+                        <li><strong>Caching</strong> - Performance optimization</li>
+                        <li><strong>Validation</strong> - Input validation and business rules</li>
+                    </ul>
+                </div>
+            </div>
+        </section>
+        <section id="testing" class="section">
+            <h2><span class="icon">🧪</span>Testing Strategies</h2>
+
+            <div class="example-container">
+                <div class="example-title">
+                    Comprehensive Testing Approach
+                    <span class="complexity-badge intermediate">Intermediate</span>
+                </div>
+
+                <p>Complete testing strategies for Compose State applications including unit, integration, and widget
+                    tests.</p>
+
+                <div class="code-block" data-lang="dart">
+                    import 'package:flutter_test/flutter_test.dart';
+                    import 'package:compose_state/testing.dart';
+                    import 'package:mockito/mockito.dart';
+
+                    // Unit Tests for State Management
+                    void main() {
+                    group('MutableState Tests', () {
+                    test('should notify listeners when value changes', () {
+                    final state = mutableStateOf(0);
+                    var notificationCount = 0;
+
+                    state.addListener(() {
+                    notificationCount++;
+                    });
+
+                    state.value = 1;
+                    state.value = 2;
+
+                    expect(notificationCount, 2);
+                    expect(state.value, 2);
+                    });
+
+                    test('should not notify when value is the same', () {
+                    final state = mutableStateOf(0);
+                    var notificationCount = 0;
+
+                    state.addListener(() {
+                    notificationCount++;
+                    });
+
+                    state.value = 0; // Same value
+
+                    expect(notificationCount, 0);
+                    });
+
+                    test('should handle custom equality checker', () {
+                    final state = mutableStateOf(
+                    Person('John', 25),
+                    equalityChecker: EqualityChecker&lt;Person&gt;(
+                    customEquals: (a, b) =&gt; a.name == b.name,
+                    ),
+                    );
+
+                    var notificationCount = 0;
+                    state.addListener(() {
+                    notificationCount++;
+                    });
+
+                    state.value = Person('John', 30); // Same name, different age
+
+                    expect(notificationCount, 0); // Should not notify
+                    });
+                    });
+
+                    group('DerivedState Tests', () {
+                    test('should update when dependencies change', () {
+                    final firstName = mutableStateOf('John');
+                    final lastName = mutableStateOf('Doe');
+
+                    final fullName = derivedStateOf(
+                    () =&gt; '${firstName.value} ${lastName.value}',
+                    dependencies: [firstName, lastName],
+                    );
+
+                    expect(fullName.value, 'John Doe');
+
+                    firstName.value = 'Jane';
+                    expect(fullName.value, 'Jane Doe');
+
+                    lastName.value = 'Smith';
+                    expect(fullName.value, 'Jane Smith');
+                    });
+
+                    test('should handle complex computations', () {
+                    final numbers = mutableStateOf&lt;List&lt;int&gt;&gt;([1, 2, 3, 4, 5]);
+
+                    final statistics = derivedStateOf(() {
+                    final nums = numbers.value;
+                    return {
+                    'sum': nums.fold&lt;int&gt;(0, (a, b) =&gt; a + b),
+                    'average': nums.isEmpty ? 0.0 : nums.fold&lt;int&gt;(0, (a, b) =&gt; a + b) / nums.length,
+                    'count': nums.length,
+                    };
+                    }, dependencies: [numbers]);
+
+                    expect(statistics.value['sum'], 15);
+                    expect(statistics.value['average'], 3.0);
+                    expect(statistics.value['count'], 5);
+
+                    numbers.value = [10, 20, 30];
+
+                    expect(statistics.value['sum'], 60);
+                    expect(statistics.value['average'], 20.0);
+                    expect(statistics.value['count'], 3);
+                    });
+                    });
+
+                    group('ApiState Tests', () {
+                    late MockApiService mockApiService;
+                    late ApiState&lt;List&lt;User&gt;&gt; apiState;
+
+                    setUp(() {
+                    mockApiService = MockApiService();
+                    apiState = apiStateOf&lt;List&lt;User&gt;&gt;(
+                    () =&gt; mockApiService.getUsers(),
+                    errorHandler: StateErrorHandler(
+                    defaultStrategy: RetryStrategy(maxAttempts: 2),
+                    ),
+                    );
+                    });
+
+                    test('should handle successful API call', () async {
+                    final users = [User(id: '1', name: 'John')];
+                    when(mockApiService.getUsers()).thenAnswer((_) async =&gt; users);
+
+                    await apiState.refresh();
+
+                    expect(apiState.isLoading, false);
+                    expect(apiState.hasError, false);
+                    expect(apiState.data, users);
+                    });
+
+                    test('should handle API errors with retry', () async {
+                    when(mockApiService.getUsers()).thenThrow(Exception('Network error'));
+
+                    await apiState.refresh();
+
+                    expect(apiState.isLoading, false);
+                    expect(apiState.hasError, true);
+                    expect(apiState.error, isA&lt;Exception&gt;());
+
+                    // Verify retry attempts
+                    verify(mockApiService.getUsers()).called(2); // Initial + 1 retry
+                    });
+
+                    test('should recover from error on successful retry', () async {
+                    final users = [User(id: '1', name: 'John')];
+
+                    // First call fails, second succeeds
+                    when(mockApiService.getUsers())
+                    .thenThrow(Exception('Network error'))
+                    .thenAnswer((_) async =&gt; users);
+
+                    await apiState.refresh();
+
+                    expect(apiState.isLoading, false);
+                    expect(apiState.hasError, false);
+                    expect(apiState.data, users);
+                    });
+                    });
+
+                    group('State Transactions Tests', () {
+                    test('should commit all changes on successful transaction', () async {
+                    final state1 = mutableStateOf('initial1');
+                    final state2 = mutableStateOf('initial2');
+
+                    final transactionManager = TransactionManager();
+
+                    await transactionManager.executeTransaction((transaction) async {
+                    state1.setValueInTransaction('updated1', transaction);
+                    state2.setValueInTransaction('updated2', transaction);
+                    });
+
+                    expect(state1.value, 'updated1');
+                    expect(state2.value, 'updated2');
+                    });
+
+                    test('should rollback all changes on failed transaction', () async {
+                    final state1 = mutableStateOf('initial1');
+                    final state2 = mutableStateOf('initial2');
+
+                    final transactionManager = TransactionManager();
+
+                    try {
+                    await transactionManager.executeTransaction((transaction) async {
+                    state1.setValueInTransaction('updated1', transaction);
+                    state2.setValueInTransaction('updated2', transaction);
+                    throw Exception('Transaction failed');
+                    });
+                    } catch (e) {
+                    // Expected to fail
+                    }
+
+                    expect(state1.value, 'initial1'); // Should be rolled back
+                    expect(state2.value, 'initial2'); // Should be rolled back
+                    });
+                    });
+
+                    group('Mock State Tests', () {
+                    test('should control mock state behavior', () {
+                    final mockState = mockStateOf(42);
+
+                    // Test normal behavior
+                    expect(mockState.value, 42);
+
+                    // Control return value
+                    mockState.returnValue(100);
+                    expect(mockState.value, 100);
+
+                    // Make it throw on access
+                    mockState.throwOnGet();
+                    expect(() =&gt; mockState.value, throwsException);
+
+                    // Reset behavior
+                    mockState.reset();
+                    expect(mockState.value, 42); // Back to initial value
+                    });
+
+                    test('should track state changes', () {
+                    final state = mutableStateOf(0);
+                    final tracker = createStateTracker();
+
+                    tracker.trackState('counter', state);
+                    tracker.startTracking();
+
+                    state.value = 1;
+                    state.value = 2;
+                    state.value = 3;
+
+                    final history = tracker.geistory('counter' expect(histh, 4); // Initial + 3s
+                    expect(history.last.newValue, 3);
+
+                    tracker.stopTracking();
+                    });
+                    });
+
+                    group('Performance Tests', () {
+                    test('should handle large number of state updates efficiently', () {
+                    final state = mutableStateOf(0);
+                    var notificationCount = 0;
+
+                    state.addListener(() {
+                    notificationCount++;
+                    });
+
+                    final stopwatch = Stopwatch()..start();
+
+                    // Perform many updates
+                    for (int i = 0; i &lt; 10000; i++) {
+                    state.value = i;
+                    }
+
+                    stopwatch.stop();
+
+                    expect(notificationCount, 10000);
+                    expect(stopwatch.elapsedMilliseconds, lThan(1000)); // be fast
+                    }) test('should battions ficiently', () {
+                    final state1 = mutableStateOf(0);
+                    final state2 = mutableStateOf(0);
+                    final state3 = mutableStateOf(0);
+
+                    var totalNotifications = 0;
+
+                    state1.addListener(() =&gt; totalNotifications++);
+                    state2.addListener(() =&gt; totalNotifications++);
+                    state3.addListener(() =&gt; totalNotifications++);
+
+                    final batcher = NotificationBatcher();
+
+                    batcher.batch(() {
+                    state1.value = 1;
+                    state2.value = 2;
+                    state3.value = 3;
+                    });
+
+                    // All notifications should be batched into a single frame
+                    expect(totalNotifications, 3);
+                    });
+                    });
+
+                    group('Memory Management Tests', () {
+                    test('should properly dispose states and prevent memory leaks', () {
+                    final state = mutableStateOf('test');
+
+                    expect(state.isDisposed, false);
+
+                    state.dispose();
+
+                    expect(state.isDisposed, true);
+                    expect(() =&gt; state.value, throwsA(isA&lt;StateDisposedException&gt;()));
+                    });
+
+                    test('should detect potential memory leaks', () {
+                    final manager = StateManager.instance;
+
+                    // Create many states without disposing
+                    for (int i = 0; i &lt; 100; i++) {
+                    mutableStateOf(i);
+                    }
+
+                    final stats = manager.getMemoryStats();
+                    expect(stats.activeStates, greaterThan(50));
+
+                    final leaks = manager.detectPotentialLeaks();
+                    expect(leaks.isNotEmpty, true);
+
+                    // Cleanup
+                    manager.performGarbageCollection();
+                    });
+                    });
+                    }</div>
+
+                <div class="highlight">
+                    <strong>Testing Best Practices:</strong>
+                    <ul>
+                        <li><strong>Unit Tests</strong> - Test individual state behaviors and computations</li>
+                        <li><strong>Mock States</strong> - Control state behavior for predictable testing</li>
+                        <li><strong>State Tracking</strong> - Monitor state changes during tests</li>
+                        <li><strong>Transaction Testing</strong> - Verify atomic operations work correctly</li>
+                        <li><strong>Performance Testing</strong> - Ensure state updates are efficient</li>
+                        <li><strong>Memory Testing</strong> - Prevent memory leaks and verify disposal</li>
+                        <li><strong>Error Handling</strong> - Test error scenarios and recovery</li>
+                    </ul>
+                </div>
+            </div>
+        </section>
+
+        <section id="best-practices" class="section">
+            <h2><span class="icon">✨</span>Best Practices & Performance</h2>
+
+            <div class="feature-grid">
+                <div class="feature-card">
+                    <h4>🎯 State Organization</h4>
+                    <ul>
+                        <li>Keep state close to where it's used</li>
+                        <li>Use derived states for computed values</li>
+                        <li>Group related states in ViewModels</li>
+                        <li>Avoid deeply nested state structures</li>
+                    </ul>
+                </div>
+
+                <div class="feature-card">
+                    <h4>⚡ Performance Optimization</h4>
+                    <ul>
+                        <li>Use custom equality checkers for complex objects</li>
+                        <li>Batch state updates when possible</li>
+                        <li>Implement proper disposal patterns</li>
+                        <li>Use OptimizedStateBuilder for expensive widgets</li>
+                    </ul>
+                </div>
+
+                <div class="feature-card">
+                    <h4>🛡️ Error Handling</h4>
+                    <ul>
+                        <li>Always provide error recovery strategies</li>
+                        <li>Use error boundaries for UI protection</li>
+                        <li>Implement proper retry mechanisms</li>
+                        <li>Log errors for debugging and monitoring</li>
+                    </ul>
+                </div>
+
+                <div class="feature-card">
+                    <h4>🧪 Testing Strategy</h4>
+                    <ul>
+                        <li>Test state logic separately from UI</li>
+                        <li>Use mock states for predictable testing</li>
+                        <li>Test error scenarios and edge cases</li>
+                        <li>Monitor memory usage and disposal</li>
+                    </ul>
+                </div>
+
+                <div class="feature-card">
+                    <h4>🏗️ Architecture Guidelines</h4>
+                    <ul>
+                        <li>Follow clean architecture principles</li>
+                        <li>Separate business logic from UI logic</li>
+                        <li>Use dependency injection for testability</li>
+                        <li>Implement proper layering and abstractions</li>
+                    </ul>
+                </div>
+
+                <div class="feature-card">
+                    <h4>🔒 Security Considerations</h4>
+                    <ul>
+                        <li>Validate all input data</li>
+                        <li>Sanitize data before persistence</li>
+                        <li>Use type-safe serialization</li>
+                        <li>Implement proper access controls</li>
+                    </ul>
+                </div>
+            </div>
+
+            <div class="example-container">
+                <div class="example-title">Performance Optimization Example</div>
+
+                <div class="code-block" data-lang="dart">
+                    // ❌ Bad: Expensive computation in build method
+                    class BadExample extends StatelessWidget {
+                    @override
+                    Widget build(BuildContext context) {
+                    final expensiveResult = performExpensiveComputation(); // Runs on every build!
+                    return Text(expensiveResult);
+                    }
+                    }
+
+                    // ✅ Good: Use derived state for expensive computations
+                    final inputData = mutableStateOf&lt;List&lt;int&gt;&gt;([]);
+
+                    final expensiveComputation = derivedStateOf(() {
+                    // This only runs when inputData changes
+                    return performExpensiveComputation(inputData.value);
+                    });
+
+                    class GoodExample extends StatelessWidget {
+                    @override
+                    Widget build(BuildContext context) {
+                    return StateBuilder&lt;String&gt;(
+                    state: expensiveComputation,
+                    builder: (context, result) {
+                    return Text(result);
+                    },
+                    );
+                    }
+                    }
+
+                    // ✅ Even better: Use OptimizedStateBuilder for complex widgets
+                    class OptimizedExample extends StatelessWidget {
+                    @override
+                    Widget build(BuildContext context) {
+                    return OptimizedStateBuilder&lt;String&gt;(
+                    state: expensiveComputation,
+                    equalityChecker: (a, b) =&gt; a == b, // Custom equality
+                    builder: (context, result) {
+                    return ExpensiveWidget(data: result);
+                    },
+                    );
+                    }
+                    }</div>
+            </div>
+        </section>
+
+        <div
+            style="text-align: center; padding: 40px; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); margin: 40px -20px -20px -20px; border-radius: 0 0 15px 15px; color: white;">
+            <h2>🎉 You're Ready to Build Amazing Apps!</h2>
+            <p style="font-size: 1.2em; margin: 20px 0;">
+                With Compose State, you have everything you need to build scalable, maintainable, and performant Flutter
+                applications.
+            </p>
+            <p style="opacity: 0.9;">
+                Start with simple examples and gradually work your way up to complex enterprise architectures.
+            </p>
+            <div style="margin-top: 30px;">
+                <a href="https://pub.dev/packages/compose_state"
+                    style="color: white; text-decoration: none; background: rgba(255,255,255,0.2); padding: 12px 24px; border-radius: 25px; margin: 0 10px; display: inline-block;">
+                    📦 Get Package
+                </a>
+                <a href="https://github.com/your-repo/compose_state"
+                    style="color: white; text-decoration: none; background: rgba(255,255,255,0.2); padding: 12px 24px; border-radius: 25px; margin: 0 10px; display: inline-block;">
+                    🐙 GitHub
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Smooth scrolling for navigation links
+        document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+            anchor.addEventListener('click', function (e) {
+                e.preventDefault();
+                const target = document.querySelector(this.getAttribute('href'));
+                if (target) {
+                    target.scrollIntoView({
+                        behavior: 'smooth',
+                        block: 'start'
+                    });
+                }
+            });
+        });
+
+        // Highlight current section in navigation
+        window.addEventListener('scroll', () => {
+            const sections = document.querySelectorAll('.section');
+            const navLinks = document.querySelectorAll('.nav a');
+
+            let current = '';
+            sections.forEach(section => {
+                const sectionTop = section.offsetTop;
+                const sectionHeight = section.clientHeight;
+                if (scrollY >= (sectionTop - 200)) {
+                    current = section.getAttribute('id');
+                }
+            });
+
+            navLinks.forEach(link => {
+                link.classList.remove('active');
+                if (link.getAttribute('href') === '#' + current) {
+                    link.classList.add('active');
+                }
+            });
+        });
+
+        // Add syntax highlighting for code blocks
+        document.querySelectorAll('.code-block').forEach(block => {
+            // Simple syntax highlighting for Dart code
+            let code = block.innerHTML;
+
+            // Keywords
+            code = code.replace(/\b(class|extends|implements|abstract|final|const|var|late|void|Future|String|int|double|bool|List|Map|Set)\b/g, '<span style="color: #569cd6;">$1</span>');
+
+            // Strings
+            code = code.replace(/'([^']*)'/g, '<span style="color: #ce9178;">\'$1\'</span>');
+            code = code.replace(/"([^"]*)"/g, '<span style="color: #ce9178;">"$1"</span>');
+
+            // Comments
+            code = code.replace(/\/\/.*$/gm, '<span style="color: #6a9955;">$&</span>');
+
+            // Numbers
+            code = code.replace(/\b\d+\.?\d*\b/g, '<span style="color: #b5cea8;">$&</span>');
+
+            block.innerHTML = code;
+        });
+
+        // Add copy functionality to code blocks
+        document.querySelectorAll('.code-block').forEach(block => {
+            const copyButton = document.createElement('button');
+            copyButton.innerHTML = '📋 Copy';
+            copyButton.style.cssText = `
+                position: absolute;
+                top: 10px;
+                left: 15px;
+                background: #4a5568;
+                color: #e2e8f0;
+                border: none;
+                padding: 5px 10px;
+                border-radius: 5px;
+                cursor: pointer;
+                font-size: 0.8em;
+            `;
+
+            copyButton.addEventListener('click', () => {
+                const text = block.textContent;
+                navigator.clipboard.writeText(text).then(() => {
+                    copyButton.innerHTML = '✅ Copied!';
+                    setTimeout(() => {
+                        copyButton.innerHTML = '📋 Copy';
+                    }, 2000);
+                });
+            });
+
+            block.style.position = 'relative';
+            block.appendChild(copyButton);
+        });
+
+        // Add interactive examples (placeholder for future enhancement)
+        console.log('🚀 Compose State Documentation Loaded!');
+        console.log('📚 Ready to explore state management examples');
+    </script>
+</body>
+
+</html>
+<section id="testing" class="section">
+    <h2><span class="icon">🧪</span>Testing Strategies</h2>
+
+    <div class="example-container">
+        <div class="example-title">
+            Comprehensive Testing Approach
+            <span class="complexity-badge intermediate">Intermediate</span>
+        </div>
+
+        <p>Testing strategies for Compose State applications from unit tests to integration tests.</p>
+
+        <div class="code-block" data-lang="dart">
+            import 'package:flutter_test/flutter_test.dart';
+            import 'package:compose_state/testing.dart';
+            import 'package:compose_state/compose_state.dart';
+
+            // Unit Tests for State Management
+            void main() {
+            group('MutableState Tests', () {
+            test('should notify listeners when value changes', () {
+            final state = mutableStateOf(0);
+            var notificationCount = 0;
+
+            state.addListener(() => notificationCount++);
+
+            state.value = 1;
+            state.value = 2;
+
+            expect(notificationCount, 2);
+            expect(state.value, 2);
+            });
+
+            test('should not notify when value is the same', () {
+            final state = mutableStateOf(0);
+            var notificationCount = 0;
+
+            state.addListener(() => notificationCount++);
+
+            state.value = 0; // Same value
+
+            expect(notificationCount, 0);
+            });
+            });
+
+            group('DerivedState Tests', () {
+            test('should update when dependencies change', () {
+            final firstName = mutableStateOf('John');
+            final lastName = mutableStateOf('Doe');
+
+            final fullName = derivedStateOf(
+            () => '${firstName.value} ${lastName.value}',
+            dependencies: [firstName, lastName],
+            );
+
+            expect(fullName.value, 'John Doe');
+
+            firstName.value = 'Jane';
+            expect(fullName.value, 'Jane Doe');
+            });
+            });
+
+            group('ApiState Tests', () {
+            test('should handle successful API calls', () async {
+            final apiState = apiStateOf<String>(
+                () async => 'Success',
+                );
+
+                await apiState.refresh();
+
+                expect(apiState.isLoading, false);
+                expect(apiState.hasError, false);
+                expect(apiState.data, 'Success');
+                });
+
+                test('should handle API errors with retry', () async {
+                var callCount = 0;
+                final apiState = apiStateOf<String>(
+                    () async {
+                    callCount++;
+                    if (callCount < 3) { throw Exception('Network error'); } return 'Success after retry' ; },
+                        errorHandler: StateErrorHandler( defaultStrategy: RetryStrategy(maxAttempts: 3), ), ); await
+                        apiState.refresh(); expect(callCount, 3); expect(apiState.data, 'Success after retry' ); }); });
+                        group('Mock State Tests', () { test('should control mock state behavior', () { final
+                        mockState=mockStateOf(42); // Test normal behavior expect(mockState.value, 42); // Control
+                        return value mockState.returnValue(100); expect(mockState.value, 100); // Test error throwing
+                        mockState.throwOnGet(); expect(()=> mockState.value, throwsException);
+
+                        mockState.throwOnSet();
+                        expect(() => mockState.value = 200, throwsException);
+                        });
+                        });
+
+                        group('State Change Tracking Tests', () {
+                        test('should track state changes', () async {
+                        final state = mutableStateOf(0);
+                        final tracker = createStateTracker();
+
+                        tracker.trackState('counter', state);
+                        tracker.startTracking();
+
+                        state.value = 1;
+                        state.value = 2;
+                        state.value = 3;
+
+                        final history = tracker.getChangeHistory('counter');
+                        expect(history.length, 4); // initial + 3 changes
+
+                        final changes = tracker.getChanges('counter');
+                        expect(changes.length, 3); // Only actual changes
+
+                        tracker.stopTracking();
+                        });
+                        });
+                        }
+
+                        // Widget Tests
+                        void main() {
+                        group('StateBuilder Widget Tests', () {
+                        testWidgets('should rebuild when state changes', (tester) async {
+                        final counter = mutableStateOf(0);
+
+                        await tester.pumpWidget(
+                        MaterialApp(
+                        home: StateBuilder<int>(
+                            state: counter,
+                            builder: (context, count) {
+                            return Text('Count: $count');
+                            },
+                            ),
+                            ),
+                            );
+
+                            expect(find.text('Count: 0'), findsOneWidget);
+
+                            counter.value = 5;
+                            await tester.pump();
+
+                            expect(find.text('Count: 5'), findsOneWidget);
+                            });
+
+                            testWidgets('should handle state disposal', (tester) async {
+                            final state = mutableStateOf('test');
+
+                            await tester.pumpWidget(
+                            MaterialApp(
+                            home: StateBuilder<String>(
+                                state: state,
+                                builder: (context, value) => Text(value),
+                                ),
+                                ),
+                                );
+
+                                expect(state.isDisposed, false);
+
+                                // Remove widget
+                                await tester.pumpWidget(Container());
+
+                                // State should still be alive (not auto-disposed)
+                                expect(state.isDisposed, false);
+
+                                // Manual disposal
+                                state.dispose();
+                                expect(state.isDisposed, true);
+                                });
+                                });
+                                }
+
+                                // Integration Tests
+                                void main() {
+                                group('Shopping Cart Integration Tests', () {
+                                testWidgets('complete shopping flow', (tester) async {
+                                // Setup
+                                CartService.clearCart();
+
+                                await tester.pumpWidget(ShoppingApp());
+
+                                // Verify initial state
+                                expect(find.text('Your cart is empty'), findsOneWidget);
+
+                                // Navigate to products tab
+                                await tester.tap(find.text('Products'));
+                                await tester.pumpAndSettle();
+
+                                // Add product to cart
+                                await tester.tap(find.byIcon(Icons.add).first);
+                                await tester.pumpAndSettle();
+
+                                // Verify snackbar
+                                expect(find.byType(SnackBar), findsOneWidget);
+
+                                // Navigate to cart tab
+                                await tester.tap(find.text('Cart'));
+                                await tester.pumpAndSettle();
+
+                                // Verify cart has item
+                                expect(find.text('Your cart is empty'), findsNothing);
+                                expect(find.text('Laptop'), findsOneWidget);
+
+                                // Test quantity update
+                                await tester.tap(find.byIcon(Icons.add));
+                                await tester.pumpAndSettle();
+
+                                // Verify quantity changed
+                                expect(find.text('2'), findsOneWidget);
+
+                                // Test checkout button
+                                await tester.tap(find.text('Checkout'));
+                                await tester.pumpAndSettle();
+
+                                expect(find.byType(SnackBar), findsOneWidget);
+                                });
+                                });
+                                }
+
+                                // Performance Tests
+                                void main() {
+                                group('Performance Tests', () {
+                                test('should handle large state updates efficiently', () {
+                                final stopwatch = Stopwatch()..start();
+                                final state = mutableStateOf(<int>[]);
+
+                                    // Add 10,000 items
+                                    for (int i = 0; i < 10000; i++) { state.value=[...state.value, i]; }
+                                        stopwatch.stop(); expect(state.value.length, 10000);
+                                        expect(stopwatch.elapsedMilliseconds, lessThan(1000)); // Should be fast });
+                                        test('should batch notifications efficiently', () { final
+                                        batcher=NotificationBatcher(); final state1=mutableStateOf(0); final
+                                        state2=mutableStateOf(0); var notificationCount=0; state1.addListener(()=>
+                                        notificationCount++);
+                                        state2.addListener(() => notificationCount++);
+
+                                        batcher.batch(() {
+                                        state1.value = 1;
+                                        state2.value = 1;
+                                        state1.value = 2;
+                                        state2.value = 2;
+                                        });
+
+                                        // Should batch notifications
+                                        expect(notificationCount, 2); // One per state, not per change
+                                        });
+                                        });
+                                        }
+
+                                        // Memory Leak Tests
+                                        void main() {
+                                        group('Memory Management Tests', () {
+                                        test('should detect potential memory leaks', () {
+                                        final manager = StateManager.instance;
+                                        final states = <MutableState<int>>[];
+
+                                            // Create many states without disposing
+                                            for (int i = 0; i < 100; i++) { states.add(mutableStateOf(i)); } final
+                                                stats=manager.getMemoryStats(); expect(stats.activeStates,
+                                                greaterThanOrEqualTo(100)); final leaks=manager.detectPotentialLeaks();
+                                                expect(leaks.isNotEmpty, true); // Clean up for (final state in states)
+                                                { state.dispose(); } manager.performGarbageCollection(); final
+                                                finalStats=manager.getMemoryStats(); expect(finalStats.activeStates,
+                                                lessThan(stats.activeStates)); }); }); }</div>
+        </div>
+</section>
+
+<section id="best-practices" class="section">
+    <h2><span class="icon">✨</span>Best Practices & Performance</h2>
+
+    <div class="feature-grid">
+        <div class="feature-card">
+            <h4>🎯 State Organization</h4>
+            <ul>
+                <li>Keep state close to where it's used</li>
+                <li>Use derived state for computed values</li>
+                <li>Prefer immutable updates</li>
+                <li>Group related state together</li>
+            </ul>
+        </div>
+
+        <div class="feature-card">
+            <h4>⚡ Performance Optimization</h4>
+            <ul>
+                <li>Use OptimizedStateBuilder for expensive widgets</li>
+                <li>Implement custom equality checkers</li>
+                <li>Batch state updates when possible</li>
+                <li>Dispose states properly</li>
+            </ul>
+        </div>
+
+        <div class="feature-card">
+            <h4>🛡️ Error Handling</h4>
+            <ul>
+                <li>Always provide error boundaries</li>
+                <li>Implement retry strategies for API calls</li>
+                <li>Use fallback values for critical state</li>
+                <li>Log errors for debugging</li>
+            </ul>
+        </div>
+
+        <div class="feature-card">
+            <h4>🧪 Testing Strategy</h4>
+            <ul>
+                <li>Test state logic separately from UI</li>
+                <li>Use mock states for isolated testing</li>
+                <li>Test error scenarios and edge cases</li>
+                <li>Monitor memory usage in tests</li>
+            </ul>
+        </div>
+
+        <div class="feature-card">
+            <h4>🏗️ Architecture Guidelines</h4>
+            <ul>
+                <li>Separate business logic from UI</li>
+                <li>Use ViewModels for complex state</li>
+                <li>Implement repository pattern for data</li>
+                <li>Follow clean architecture principles</li>
+            </ul>
+        </div>
+
+        <div class="feature-card">
+            <h4>🔒 Security Considerations</h4>
+            <ul>
+                <li>Validate all input data</li>
+                <li>Sanitize persistent state</li>
+                <li>Use type-safe serialization</li>
+                <li>Implement proper error boundaries</li>
+            </ul>
+        </div>
+    </div>
+
+    <div class="highlight">
+        <h3>🚀 Quick Performance Tips</h3>
+        <ul>
+            <li><strong>Use const constructors</strong> - Reduce widget rebuilds</li>
+            <li><strong>Implement shouldRebuild</strong> - Control when widgets update</li>
+            <li><strong>Batch state changes</strong> - Use NotificationBatcher for multiple updates</li>
+            <li><strong>Dispose properly</strong> - Always dispose states to prevent memory leaks</li>
+            <li><strong>Use derived state</strong> - Avoid manual calculations in build methods</li>
+            <li><strong>Profile regularly</strong> - Monitor memory usage and performance</li>
+        </ul>
+    </div>
+</section>
+
+<footer
+    style="text-align: center; padding: 40px 0; background: #f8f9fa; margin: 40px -20px -20px -20px; border-radius: 0 0 15px 15px;">
+    <h3 style="color: #007bff; margin-bottom: 20px;">🎉 Ready to Build Amazing Apps?</h3>
+    <p style="font-size: 1.1em; margin-bottom: 20px;">
+        Start using Compose State in your Flutter projects today!
+    </p>
+    <div style="display: flex; justify-content: center; gap: 20px; flex-wrap: wrap;">
+        <a href="https://pub.dev/packages/compose_state"
+            style="background: #007bff; color: white; padding: 12px 24px; text-decoration: none; border-radius: 25px; font-weight: bold;">📦
+            Get Package</a>
+        <a href="https://github.com/compose-state/compose_state"
+            style="background: #28a745; color: white; padding: 12px 24px; text-decoration: none; border-radius: 25px; font-weight: bold;">🔗
+            GitHub</a>
+        <a href="#overview"
+            style="background: #6f42c1; color: white; padding: 12px 24px; text-decoration: none; border-radius: 25px; font-weight: bold;">📚
+            Docs</a>
+    </div>
+    <p style="margin-top: 30px; color: #6c757d;">
+        Made with ❤️ for the Flutter community
+    </p>
+</footer>
+</div>
+
+<script>
+    // Code formatting and syntax highlighting
+    document.addEventListener('DOMContentLoaded', function () {
+        // Format all code blocks
+        const codeBlocks = document.querySelectorAll('.code-block');
+
+        codeBlocks.forEach(block => {
+            const code = block.textContent;
+            const formatted = formatDartCode(code);
+            block.innerHTML = highlighted(formatted);
+        });
+
+        // Smooth scrolling for navigation
+        document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+            anchor.addEventListener('click', function (e) {
+                e.preventDefault();
+                const target = document.querySelector(this.getAttribute('href'));
+                if (target) {
+                    target.scrollIntoView({
+                        behavior: 'smooth',
+                        block: 'start'
+                    });
+                }
+            });
+        });
+    });
+
+    function formatDartCode(code) {
+        // Remove extra whitespace and normalize indentation
+        const lines = code.split('\n');
+
+        // Remove empty lines at start and end
+        while (lines.length > 0 && lines[0].trim() === '') {
+            lines.shift();
+        }
+        while (lines.length > 0 && lines[lines.length - 1].trim() === '') {
+            lines.pop();
+        }
+
+        if (lines.length === 0) return '';
+
+        // Find minimum indentation (excluding empty lines)
+        let minIndent = Infinity;
+        lines.forEach(line => {
+            if (line.trim() !== '') {
+                const indent = line.match(/^(\s*)/)[1].length;
+                minIndent = Math.min(minIndent, indent);
+            }
+        });
+
+        // Remove minimum indentation from all lines
+        const formatted = lines.map(line => {
+            if (line.trim() === '') return '';
+            return line.substring(minIndent);
+        }).join('\n');
+
+        return formatted;
+    }
+
+    function highlighted(code) {
+        // Simple syntax highlighting for Dart
+        return code
+            // Keywords
+            .replace(/\b(class|abstract|interface|extends|implements|with|mixin|enum|typedef|library|import|export|part|show|hide|as|deferred|factory|const|final|var|static|external|operator|get|set|async|await|sync|yield|if|else|for|while|do|switch|case|default|break|continue|return|throw|try|catch|finally|rethrow|assert|new|this|super|null|true|false|void|dynamic|Function|int|double|num|String|bool|List|Map|Set|Iterable|Future|Stream)\b/g, '<span style="color: #ff79c6;">$1</span>')
+            // Strings
+            .replace(/(["'])((?:\\.|(?!\1)[^\\])*?)\1/g, '<span style="color: #f1fa8c;">$1$2$1</span>')
+            // Comments
+            .replace(/\/\/.*$/gm, '<span style="color: #6272a4;">$&</span>')
+            .replace(/\/\*[\s\S]*?\*\//g, '<span style="color: #6272a4;">$&</span>')
+            // Numbers
+            .replace(/\b\d+\.?\d*\b/g, '<span style="color: #bd93f9;">$&</span>')
+            // Types (capitalized words)
+            .replace(/\b[A-Z][a-zA-Z0-9_]*\b/g, '<span style="color: #8be9fd;">$&</span>')
+            // Functions
+            .replace(/\b([a-z_][a-zA-Z0-9_]*)\s*\(/g, '<span style="color: #50fa7b;">$1</span>(')
+            // Annotations
+            .replace(/@[a-zA-Z_][a-zA-Z0-9_]*/g, '<span style="color: #ffb86c;">$&</span>');
+    }
+
+    // Add copy functionality to code blocks
+    document.addEventListener('DOMContentLoaded', function () {
+        const codeBlocks = document.querySelectorAll('.code-block');
+
+        codeBlocks.forEach(block => {
+            const copyButton = document.createElement('button');
+            copyButton.textContent = 'Copy';
+            copyButton.style.cssText = `
+                    position: absolute;
+                    top: 10px;
+                    right: 60px;
+                    background: #4a5568;
+                    color: white;
+                    border: none;
+                    padding: 5px 10px;
+                    border-radius: 5px;
+                    cursor: pointer;
+                    font-size: 12px;
+                `;
+
+            copyButton.addEventListener('click', () => {
+                const text = block.textContent;
+                navigator.clipboard.writeText(text).then(() => {
+                    copyButton.textContent = 'Copied!';
+                    setTimeout(() => {
+                        copyButton.textContent = 'Copy';
+                    }, 2000);
+                });
+            });
+
+            block.appendChild(copyButton);
+        });
+    });
+</script>
+</body>
+
+</html>

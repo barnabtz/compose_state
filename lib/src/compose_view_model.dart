@@ -1,16 +1,132 @@
 import 'dart:convert';
+import 'package:compose_state/compose_state.dart';
 import 'package:flutter/widgets.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
-abstract class ComposeViewModel extends ChangeNotifier {}
+abstract class ComposeViewModel extends ChangeNotifier {
+  /// Map of UI states managed by this ViewModel
+  final Map<String, ObservableState<UiState>> _uiStates = {};
+
+  /// Map of source states that feed into UI states
+  final Map<String, ObservableState> _sourceStates = {};
+
+  /// Whether the ViewModel is disposed
+  bool _isDisposed = false;
+
+  /// Gets whether this ViewModel is disposed
+  bool get isDisposed => _isDisposed;
+
+  /// Creates a computed UI state from multiple source states
+  ComputedUiState<T> createUiState<T>(
+    String key,
+    UiState<T> Function() computation, {
+    List<ObservableState>? dependencies,
+  }) {
+    if (_isDisposed) {
+      throw const StateValidationException(
+        'Cannot create UI state on disposed ViewModel',
+        violatedRule: 'viewmodel_disposed',
+      );
+    }
+
+    final uiState = ComputedUiState<T>(computation, dependencies: dependencies);
+
+    _uiStates[key] = uiState;
+    return uiState;
+  }
+
+  /// Creates a UI state that maps a single source state
+  ComputedUiState<T> mapToUiState<T>(
+    String key,
+    ObservableState sourceState,
+    UiState<T> Function(dynamic value) mapper,
+  ) {
+    return createUiState<T>(
+      key,
+      () => mapper(sourceState.value),
+      dependencies: [sourceState],
+    );
+  }
+
+  /// Creates a loading UI state that becomes success when source has data
+  ComputedUiState<T> loadingToSuccessUiState<T>(
+    String key,
+    ObservableState<T> sourceState,
+  ) {
+    return createUiState<T>(key, () {
+      if (sourceState.value == null) {
+        return UiState.loading();
+      }
+      return UiState.success(sourceState.value);
+    }, dependencies: [sourceState]);
+  }
+
+  /// Gets a UI state by key
+  ObservableState<UiState<T>>? getUiState<T>(String key) {
+    return _uiStates[key] as ObservableState<UiState<T>>?;
+  }
+
+  /// Registers a source state for dependency tracking
+  void registerSourceState(String key, ObservableState state) {
+    if (_isDisposed) return;
+    _sourceStates[key] = state;
+  }
+
+  /// Gets a source state by key
+  ObservableState? getSourceState(String key) {
+    return _sourceStates[key];
+  }
+
+  /// Creates a simple loading UI state
+  ComputedUiState<T> createLoadingUiState<T>(String key) {
+    return createUiState<T>(key, () => UiState.loading());
+  }
+
+  /// Creates a simple error UI state
+  ComputedUiState<T> createErrorUiState<T>(String key, String error) {
+    return createUiState<T>(key, () => UiState.error(error));
+  }
+
+  /// Creates a simple success UI state
+  ComputedUiState<T> createSuccessUiState<T>(String key, T data) {
+    return createUiState<T>(key, () => UiState.success(data));
+  }
+
+  /// Creates a simple empty UI state
+  ComputedUiState<T> createEmptyUiState<T>(String key) {
+    return createUiState<T>(key, () => UiState.empty());
+  }
+
+  @override
+  void dispose() {
+    if (_isDisposed) return;
+    _isDisposed = true;
+
+    // Dispose all UI states
+    for (final uiState in _uiStates.values) {
+      if (uiState is ComputedUiState) {
+        uiState.dispose();
+      }
+    }
+    _uiStates.clear();
+    _sourceStates.clear();
+
+    super.dispose();
+  }
+}
 
 abstract class Serializable {
   Map<String, dynamic> toJson();
-  factory Serializable.fromJson(Map<String, dynamic> json) => throw UnimplementedError();
+  factory Serializable.fromJson(Map<String, dynamic> json) =>
+      throw UnimplementedError();
 }
 
 mixin Persistable on ComposeViewModel {
-  Future<void> persist<T>(String key, T value, {String Function(T)? toJson}) async {
+  Future<void> persist<T>(
+    String key,
+    T value, {
+    String Function(T)? toJson,
+  }) async {
     final prefs = await SharedPreferences.getInstance();
     if (value == null) {
       await prefs.remove(key);
@@ -57,18 +173,27 @@ mixin Persistable on ComposeViewModel {
   }
 
   Future<void> persistDynamicList(String key, List<dynamic> values) async {
-    final tagged = values.map((v) {
-      if (v is Serializable) {
-        return {'type': v.runtimeType.toString(), 'data': jsonEncode(v.toJson())};
-      }
-      return {'type': 'dynamic', 'data': jsonEncode(v)};
-    }).toList();
+    final tagged =
+        values.map((v) {
+          if (v is Serializable) {
+            return {
+              'type': v.runtimeType.toString(),
+              'data': jsonEncode(v.toJson()),
+            };
+          }
+          return {'type': 'dynamic', 'data': jsonEncode(v)};
+        }).toList();
     await persist(key, tagged);
   }
 
-  Future<List<dynamic>> restoreDynamicList(String key, Map<String, Serializable Function(String)> typeRegistry) async {
+  Future<List<dynamic>> restoreDynamicList(
+    String key,
+    Map<String, Serializable Function(String)> typeRegistry,
+  ) async {
     final List<dynamic>? raw = await restore(key);
-    if (raw == null || raw.isEmpty) return [];
+    if (raw == null || raw.isEmpty) {
+      return [];
+    }
     return raw.map((item) {
       final type = item['type'] as String;
       final data = item['data'] as String;
@@ -82,13 +207,20 @@ class ViewModelScope extends StatefulWidget {
   final Map<Type, ComposeViewModel> viewModels;
   final Widget child;
 
-  const ViewModelScope({super.key, required this.viewModels, required this.child});
+  const ViewModelScope({
+    super.key,
+    required this.viewModels,
+    required this.child,
+  });
 
   static T of<T extends ComposeViewModel>(BuildContext context) {
-    final scope = context.dependOnInheritedWidgetOfExactType<_InheritedViewModelScope>();
+    final scope =
+        context.dependOnInheritedWidgetOfExactType<_InheritedViewModelScope>();
     if (scope == null) throw Exception('No ViewModelScope found in context');
     final viewModel = scope.viewModels[T];
-    if (viewModel == null) throw Exception('No ViewModel of type $T found in scope');
+    if (viewModel == null) {
+      throw Exception('No ViewModel of type $T found in scope');
+    }
     return viewModel as T;
   }
 
@@ -123,5 +255,6 @@ class _InheritedViewModelScope extends InheritedWidget {
   });
 
   @override
-  bool updateShouldNotify(_InheritedViewModelScope oldWidget) => viewModels != oldWidget.viewModels;
+  bool updateShouldNotify(_InheritedViewModelScope oldWidget) =>
+      viewModels != oldWidget.viewModels;
 }

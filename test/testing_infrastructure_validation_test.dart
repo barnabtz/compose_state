@@ -262,13 +262,13 @@ void main() {
 
         // MockApiState starts with Loading state, so first change is to success
         apiState.simulateSuccess('test data');
-        expect(apiState.value, isA<Success<String>>());
-        expect((apiState.value as Success<String>).data, equals('test data'));
+        expect(apiState.value, isA<SuccessState<String>>());
+        expect((apiState.value as SuccessState<String>).data, equals('test data'));
 
         // Test error state
         apiState.simulateError('test error');
-        expect(apiState.value, isA<Error<String>>());
-        expect((apiState.value as Error<String>).message, equals('test error'));
+        expect(apiState.value, isA<ErrorState<String>>());
+        expect((apiState.value as ErrorState<String>).error, equals('test error'));
 
         // Should have 2 changes: Loading->Success, Success->Error
         listener.expectCallCount(2);
@@ -285,13 +285,13 @@ void main() {
 
         expect(disposedState, StateMatchers.isDisposed);
 
-        final loadingState = const Loading<String>();
+        final loadingState = const LoadingState<String>();
         expect(loadingState, StateMatchers.isLoading);
 
-        final successState = const Success<String>('test data');
+        final successState = const SuccessState<String>('test data');
         expect(StateMatchers.isSuccess<String>(successState, 'test data'), isTrue);
 
-        final errorState = const Error<String>('test error');
+        final errorState = const ErrorState<String>('test error');
         expect(StateMatchers.isError<String>(errorState, 'test error'), isTrue);
       });
 
@@ -335,7 +335,7 @@ void main() {
         expect(mockState, isA<MockState<int>>());
 
         final mockApiState = mockApiStateOf<String>();
-        expect(mockApiState.value, isA<Loading<String>>());
+        expect(mockApiState.value, isA<LoadingState<String>>());
         expect(mockApiState, isA<MockApiState<String>>());
 
         mockState.dispose();
