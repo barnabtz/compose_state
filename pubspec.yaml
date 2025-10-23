@@ -1,6 +1,6 @@
 name: compose_state
 description: "A Flutter state management package inspired by Jetpack Compose, offering reactive state, centralized ViewModel scoping, API handling, and persistence for basic, complex, and dynamic objects."
-version: 0.1.0
+version: 0.2.0-dev.1  # Pre-release version
 homepage: "https://github.com/barnabtz/compose_state"
 repository: "https://github.com/barnabtz/compose_state.git"
 issue_tracker: "https://github.com/barnabtz/compose_state/issues"

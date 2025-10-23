@@ -5,7 +5,7 @@ All notable changes to the `compose_state` package will be documented in this fi
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [0.2.0] - 2025-10-12
+## [0.2.0-dev.1] - 2025-10-23
 
 ### Added
 - `SignalState`: Granular reactivity for fine-grained rebuilds (inspired by Flutter Signals).
@@ -23,27 +23,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Fixed
 - Type mismatches with `ObservableState` setter enforcement.
 - Linter warnings (unnecessary overrides, missing `@override`).
-
-[0.2.0]: https://github.com/yourusername/compose_state/releases/tag/v0.2.0
-
-## [0.1.0] - 2025-04-12
-
-### Added
-- Initial release of `compose_state`, a lightweight state management solution for Flutter.
-- Core components: `MutableState`, `PersistableState`, `HistoryState`, `ApiState`, `DerivedState`, `StateBuilder`, `UiStateBuilder`.
-- `ViewModelScope` for MVVM architecture.
-- Example apps in documentation: Simple Counter, Persistent Counter, Async Weather App with Open-Meteo, Todo App with Firebase.
-- Comprehensive HTML documentation with code snippets, tutorials, and best practices.
-
-### Fixed
-- N/A (initial release).
-
-[0.1.0]: https://github.com/yourusername/compose_state/releases/tag/v0.1.0# Changelog
-
-All notable changes to the `compose_state` package will be documented in this file.
-
-The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
-and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [0.2.0] - 2025-10-12
 
@@ -64,6 +43,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Type mismatches with `ObservableState` setter enforcement.
 - Linter warnings (unnecessary overrides, missing `@override`).
 
+[0.2.0-dev.1]: https://github.com/yourusername/compose_state/releases/tag/v0.2.0-dev.1
 [0.2.0]: https://github.com/yourusername/compose_state/releases/tag/v0.2.0
 
 ## [0.1.0] - 2025-04-12
