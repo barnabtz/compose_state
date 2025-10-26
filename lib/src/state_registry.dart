@@ -27,8 +27,22 @@ class StateRegistry {
   /// Maximum number of events to keep in history.
   int maxEventHistory = 1000;
   
-  /// Interval for memory monitoring checks.
+  /// Base interval for memory monitoring checks.
   Duration monitoringInterval = const Duration(seconds: 30);
+  
+  /// Dynamic monitoring interval based on app state
+  Duration _calculateOptimalMonitoringInterval() {
+    final activeStates = getAllActiveStates().length;
+    
+    // Adjust interval based on number of active states
+    if (activeStates > 1000) {
+      return const Duration(seconds: 10); // More frequent for large apps
+    } else if (activeStates > 100) {
+      return const Duration(seconds: 20);
+    } else {
+      return const Duration(seconds: 30); // Default for smaller apps
+    }
+  }
 
   /// Starts the state registry with monitoring capabilities.
   void start() {
@@ -224,27 +238,45 @@ class StateRegistry {
 
   /// Performs a comprehensive memory cleanup.
   void performCleanup() {
+    // Process dead references in batches to reduce UI thread blocking
+    final batchSize = 50; // Process up to 50 dead states per batch
+    var processedCount = 0;
     final deadStates = <String>[];
     
     // Find all dead references
     for (final entry in _states.entries) {
       if (entry.value.target == null) {
         deadStates.add(entry.key);
+        processedCount++;
+        
+        // Process in batches to avoid blocking UI thread
+        if (processedCount >= batchSize) {
+          _processDeadStateBatch(deadStates);
+          deadStates.clear();
+          processedCount = 0;
+        }
       }
     }
     
-    // Clean up dead states
-    for (final deadState in deadStates) {
-      _cleanupDeadState(deadState);
+    // Process remaining dead states
+    if (deadStates.isNotEmpty) {
+      _processDeadStateBatch(deadStates);
     }
     
     // Trigger lifecycle manager cleanup
     StateLifecycleManager.instance.disposeMarkedStates();
     
-    _recordEvent(StateEvent.cleanupPerformed(deadStates.length));
+    _recordEvent(StateEvent.cleanupPerformed(processedCount));
     
-    if (deadStates.isNotEmpty) {
-      debugPrint('StateRegistry: Cleaned up ${deadStates.length} dead states');
+    if (processedCount > 0) {
+      debugPrint('StateRegistry: Cleaned up $processedCount dead states');
+    }
+  }
+
+  /// Processes a batch of dead states efficiently
+  void _processDeadStateBatch(List<String> deadStates) {
+    for (final deadState in deadStates) {
+      _cleanupDeadState(deadState);
     }
   }
 
@@ -356,6 +388,21 @@ class StateRegistry {
     }
     
     _recordEvent(StateEvent.monitoringCheck(stats));
+    
+    // Adjust monitoring interval based on current state
+    final optimalInterval = _calculateOptimalMonitoringInterval();
+    if (optimalInterval != monitoringInterval) {
+      monitoringInterval = optimalInterval;
+      _restartMonitoringTimer();
+    }
+  }
+  
+  /// Restarts the monitoring timer with the current interval
+  void _restartMonitoringTimer() {
+    _monitoringTimer?.cancel();
+    _monitoringTimer = Timer.periodic(monitoringInterval, (_) {
+      _performMonitoring();
+    });
   }
 
   void _cleanupDeadState(String stateId) {

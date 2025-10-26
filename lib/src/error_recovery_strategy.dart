@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'dart:io';
 import 'dart:math';
+import 'dart:collection';
 
 import 'state_exceptions.dart';
 
@@ -334,6 +335,12 @@ class CircuitBreakerStrategy implements ErrorRecoveryStrategy {
   /// Duration for half-open state.
   final Duration halfOpenDuration;
 
+  /// Failure rate threshold for opening circuit (0.0 to 1.0)
+  final double failureRateThreshold;
+
+  /// Time window for calculating failure rate
+  final Duration failureRateWindow;
+
   /// Current state of the circuit breaker.
   CircuitState _state = CircuitState.closed;
 
@@ -343,12 +350,15 @@ class CircuitBreakerStrategy implements ErrorRecoveryStrategy {
   /// Current failure count.
   int _failureCount = 0;
 
-
+  /// History of failures for rate calculation
+  final Queue<DateTime> _failureHistory = Queue<DateTime>();
 
   CircuitBreakerStrategy({
     this.failureThreshold = 5,
     this.openDuration = const Duration(minutes: 1),
     this.halfOpenDuration = const Duration(seconds: 30),
+    this.failureRateThreshold = 0.5, // 50% failure rate
+    this.failureRateWindow = const Duration(minutes: 5),
   });
 
   @override
@@ -357,19 +367,33 @@ class CircuitBreakerStrategy implements ErrorRecoveryStrategy {
     T? lastKnownValue,
     Map<String, dynamic> context,
   ) async {
+    // Clean up old failure history
+    _cleanupFailureHistory();
+    
     switch (_state) {
       case CircuitState.closed:
         _failureCount++;
-        if (_failureCount >= failureThreshold) {
+        _failureHistory.add(DateTime.now());
+        
+        // Check both absolute threshold and failure rate
+        if (_failureCount >= failureThreshold || _getFailureRate() > failureRateThreshold) {
           _openCircuit(error);
           return RecoveryResult.failure(
-            'Circuit breaker opened due to repeated failures',
-            context: {'circuitState': 'opened', 'failureCount': _failureCount},
+            'Circuit breaker opened due to repeated failures or high failure rate',
+            context: {
+              'circuitState': 'opened', 
+              'failureCount': _failureCount,
+              'failureRate': _getFailureRate()
+            },
           );
         }
         return RecoveryResult.failure(
           'Circuit breaker recording failure',
-          context: {'circuitState': 'closed', 'failureCount': _failureCount},
+          context: {
+            'circuitState': 'closed', 
+            'failureCount': _failureCount,
+            'failureRate': _getFailureRate()
+          },
         );
 
       case CircuitState.open:
@@ -385,6 +409,8 @@ class CircuitBreakerStrategy implements ErrorRecoveryStrategy {
           context: {
             'circuitState': 'open',
             'remainingTime': _getRemainingOpenTime().inSeconds,
+            'failureCount': _failureCount,
+            'failureRate': _getFailureRate()
           },
         );
 
@@ -395,6 +421,31 @@ class CircuitBreakerStrategy implements ErrorRecoveryStrategy {
           delay: const Duration(milliseconds: 50),
           context: {'circuitState': 'closed'},
         );
+    }
+  }
+
+  /// Calculates current failure rate
+  double _getFailureRate() {
+    if (_failureHistory.isEmpty) return 0.0;
+    
+    final now = DateTime.now();
+    final windowStart = now.subtract(failureRateWindow);
+    
+    // Count failures within the window
+    final recentFailures = _failureHistory.where((timestamp) => timestamp.isAfter(windowStart)).length;
+    final totalTimeSeconds = failureRateWindow.inSeconds;
+    
+    // Avoid division by zero
+    if (totalTimeSeconds <= 0) return 0.0;
+    
+    return recentFailures / totalTimeSeconds;
+  }
+
+  /// Cleans up old failure history
+  void _cleanupFailureHistory() {
+    final cutoffTime = DateTime.now().subtract(failureRateWindow);
+    while (_failureHistory.isNotEmpty && _failureHistory.first.isBefore(cutoffTime)) {
+      _failureHistory.removeFirst();
     }
   }
 

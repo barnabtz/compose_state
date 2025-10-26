@@ -298,7 +298,7 @@ void main() {
       });
 
       test('State notification performance with deep equality', () {
-        final state = immediateStateOf<List<int>>([1, 2, 3]);
+        final state = immediateStateOf<List<int>>([1, 2, 3], customEquals: (a, b) => a.length == b.length && a.asMap().entries.every((e) => e.value == b[e.key]));
         
         int notificationCount = 0;
         state.addListener(() => notificationCount++);

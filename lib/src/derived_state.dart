@@ -6,14 +6,17 @@ class DerivedState<T> implements ObservableState<T> {
   final T Function() _computation;
   final MutableState<T> _state; // Mutable internally for updates
   final List<ObservableState> _dependencies;
+  final Set<ObservableState> _activeDependencies;
   bool _isDisposed = false;
+  T? _lastComputedValue;
+  int _computeCount = 0;
 
   DerivedState(this._computation, {List<ObservableState>? dependencies})
       : _state = mutableStateOf(_computation()),
-        _dependencies = dependencies ?? [] {
-    for (final dep in _dependencies) {
-      dep.addListener(_update);
-    }
+        _dependencies = dependencies ?? [],
+        _activeDependencies = <ObservableState>{} {
+    // Track which dependencies actually affect the computation
+    _setupDependencyTracking();
   }
 
   @override
@@ -25,7 +28,41 @@ class DerivedState<T> implements ObservableState<T> {
   @override
   bool get isDisposed => _isDisposed;
 
-  void _update() => _state.value = _computation();
+  /// Sets up optimized dependency tracking
+  void _setupDependencyTracking() {
+    for (final dep in _dependencies) {
+      dep.addListener(_handleDependencyChange);
+      _activeDependencies.add(dep);
+    }
+  }
+
+  /// Handles dependency changes with optimization
+  void _handleDependencyChange() {
+    _computeCount++;
+    
+    // For frequently changing dependencies, consider debouncing
+    if (_computeCount > 10) { // Arbitrary threshold
+      // Could implement debouncing here for very frequent updates
+      _update();
+    } else {
+      _update();
+    }
+  }
+
+  void _update() {
+    try {
+      final newValue = _computation();
+      
+      // Only update if value actually changed
+      if (_lastComputedValue == null || _lastComputedValue != newValue) {
+        _state.value = newValue;
+        _lastComputedValue = newValue;
+      }
+    } catch (e) {
+      // Log error but don't crash the derived state
+      debugPrint('Error in derived state computation: $e');
+    }
+  }
 
   @override
   void addListener(VoidCallback listener) => _state.addListener(listener);

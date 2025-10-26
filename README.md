@@ -23,19 +23,25 @@ A comprehensive Flutter state management package inspired by Jetpack Compose, of
 - **🧪 Testing Infrastructure**: Mock implementations, state change tracking, and comprehensive testing utilities
 - **🔒 Runtime Type Validation**: Type safety for serialization and persistence operations
 - **🔄 State Transactions**: Atomic operations across multiple states with rollback support
+- **🧩 State Composition**: Observe multiple states simultaneously with StateComposer, StateSelector, and StateProvider/Consumer
+- **📱 UI State Pattern**: Single-state solution for complex UI states with loading, error, success, and empty states
 
 ### UI Components
 - **StateBuilder**: Reactive UI components that rebuild on state changes
 - **OptimizedStateBuilder**: Performance-optimized builder with custom equality
 - **ErrorBoundary**: Graceful error handling in UI components
+- **UiStateBuilder**: Single-state builder for complex UI states (loading, error, success, empty)
+- **StateComposer/StateSelector**: Observe multiple states without nesting
+- **StateProvider/Consumer**: Dependency injection for global state management
 
 ## 📦 Installation
 
 ```yaml
 dependencies:
   compose_state: ^0.1.0
-#
-# 🏃 Quick Start
+```
+
+## 🏃 Quick Start
 
 ### Basic Counter Example
 
@@ -106,17 +112,17 @@ final userState = apiStateOf<User>(
 );
 
 // Usage in widget
-StateBuilder<ApiStateData<User>>(
+StateBuilder<UiState<User>>(
   state: userState,
-  builder: (context, apiData) {
-    if (apiData.isLoading) {
+  builder: (context, uiData) {
+    if (uiData is LoadingState) {
       return CircularProgressIndicator();
     }
     
-    if (apiData.hasError) {
+    if (uiData is ErrorState) {
       return Column(
         children: [
-          Text('Error: ${apiData.error}'),
+          Text('Error: ${uiData.message}'),
           ElevatedButton(
             onPressed: () => userState.refresh(),
             child: Text('Retry'),
@@ -125,8 +131,161 @@ StateBuilder<ApiStateData<User>>(
       );
     }
     
-    final user = apiData.data!;
-    return UserProfile(user: user);
+    if (uiData is SuccessState<User>) {
+      final user = uiData.data;
+      return UserProfile(user: user);
+    }
+    
+    return Container(); // Empty state
+  },
+)
+```
+
+### Derived State Example
+
+```dart
+final firstName = mutableStateOf('John');
+final lastName = mutableStateOf('Doe');
+
+// Computed state that automatically updates when dependencies change
+final fullName = derivedStateOf(
+  () => '${firstName.value} ${lastName.value}',
+  dependencies: [firstName, lastName],
+);
+
+print(fullName.value); // "John Doe"
+
+firstName.value = 'Jane';
+print(fullName.value); // "Jane Doe" (automatically updated)
+```
+
+### UI State Pattern Example
+
+```dart
+class TodoViewModel extends ComposeViewModel {
+  late final isLoading = mutableStateOf(false);
+  late final error = mutableStateOf<String?>(null);
+  late final todos = mutableStateOf<List<Todo>>([]);
+  
+  // Computed UI state
+  late final uiState = createUiState<List<Todo>>(
+    'todos',
+    () {
+      if (isLoading.value) {
+        return UiState.loading();
+      }
+      
+      if (error.value != null) {
+        return UiState.error(error.value!);
+      }
+      
+      if (todos.value.isEmpty) {
+        return UiState.empty();
+      }
+      
+      return UiState.success(todos.value);
+    },
+    dependencies: [isLoading, error, todos],
+  );
+}
+
+// Usage in widget
+UiStateBuilder<List<Todo>>(
+  state: viewModel.uiState,
+  loadingBuilder: (context) => const Center(
+    child: CircularProgressIndicator(),
+  ),
+  errorBuilder: (context, error) => Center(
+    child: Column(
+      mainAxisAlignment: MainAxisAlignment.center,
+      children: [
+        const Icon(Icons.error, size: 48, color: Colors.red),
+        const SizedBox(height: 16),
+        Text('Error: $error'),
+        ElevatedButton(
+          onPressed: () => viewModel.loadTodos(),
+          child: const Text('Retry'),
+        ),
+      ],
+    ),
+  ),
+  emptyBuilder: (context) => const Center(
+    child: Column(
+      mainAxisAlignment: MainAxisAlignment.center,
+      children: [
+        Icon(Icons.inbox, size: 48, color: Colors.grey),
+        SizedBox(height: 16),
+        Text('No todos yet'),
+      ],
+    ),
+  ),
+  successBuilder: (context, todos) => ListView.builder(
+    itemCount: todos.length,
+    itemBuilder: (context, index) {
+      final todo = todos[index];
+      return ListTile(
+        title: Text(todo.title),
+        subtitle: Text(todo.description),
+        trailing: Checkbox(
+          value: todo.isCompleted,
+          onChanged: (value) => viewModel.toggleTodo(todo.id),
+        ),
+      );
+    },
+  ),
+)
+```
+
+### State Composition Example
+
+```dart
+class DashboardViewModel extends ComposeViewModel {
+  late final user = mutableStateOf<User?>(null);
+  late final stats = mutableStateOf<Stats?>(null);
+  late final notifications = mutableStateOf<List<Notification>>([]);
+  late final isLoading = mutableStateOf(false);
+  late final error = mutableStateOf<String?>(null);
+}
+
+// Observe multiple states simultaneously
+StateComposer(
+  states: {
+    'user': viewModel.user,
+    'stats': viewModel.stats,
+    'notifications': viewModel.notifications,
+    'isLoading': viewModel.isLoading,
+    'error': viewModel.error,
+  },
+  builder: (context, stateValues) {
+    final user = stateValues['user'] as User?;
+    final stats = stateValues['stats'] as Stats?;
+    final notifications = stateValues['notifications'] as List<Notification>?;
+    final isLoading = stateValues['isLoading'] as bool;
+    final error = stateValues['error'] as String?;
+    
+    if (isLoading) {
+      return const Center(child: CircularProgressIndicator());
+    }
+    
+    if (error != null) {
+      return Center(
+        child: Column(
+          children: [
+            Text('Error: $error'),
+            ElevatedButton(
+              onPressed: () => viewModel.loadDashboard(),
+              child: const Text('Retry'),
+            ),
+          ],
+        ),
+      );
+    }
+    
+    return DashboardContent(
+      user: user,
+      stats: stats,
+      notifications: notifications ?? [],
+    );
   },
 )
 ```
@@ -138,6 +297,7 @@ StateBuilder<ApiStateData<User>>(
 - [Examples](doc/examples/README.md) - Comprehensive usage examples
 - [Testing Guide](doc/testing/README.md) - Testing strategies and utilities
 - [Migration Guide](doc/migration/README.md) - Migrating from other solutions
+- [Best Practices](doc/best_practices.md) - Guidelines for effective usage
 
 ### State Types
 
@@ -165,8 +325,8 @@ State that automatically persists to storage:
 final settings = persistableStateOf<Map<String, dynamic>>(
   'app_settings',
   defaultValue: {'theme': 'light', 'notifications': true},
-  serializer: (value) => value,
-  deserializer: (json) => Map<String, dynamic>.from(json),
+  serializer: (value) => jsonEncode(value),
+  deserializer: (json) => jsonDecode(json),
 );
 
 // Changes are automatically saved
@@ -188,9 +348,11 @@ final postsState = apiStateOf<List<Post>>(
 );
 
 // Check state
-if (postsState.isLoading) { /* show loading */ }
-if (postsState.hasError) { /* show error */ }
-final posts = postsState.data; // Access data
+if (postsState.value is LoadingState) { /* show loading */ }
+if (postsState.value is ErrorState) { /* show error */ }
+if (postsState.value is SuccessState<List<Post>>) {
+  final posts = postsState.value.data; // Access data
+}
 ```
 
 #### DerivedState
@@ -200,7 +362,10 @@ Computed state that automatically updates when dependencies change:
 final firstName = mutableStateOf('John');
 final lastName = mutableStateOf('Doe');
 
-final fullName = derivedStateOf(() => '${firstName.value} ${lastName.value}');
+final fullName = derivedStateOf(
+  () => '${firstName.value} ${lastName.value}',
+  dependencies: [firstName, lastName],
+);
 
 print(fullName.value); // "John Doe"
 
@@ -264,7 +429,7 @@ Atomic operations across multiple states:
 ```dart
 final transactionManager = TransactionManager();
 
-await transactionManager.executeTransaction((transaction) async {
+await transactionManager.executeInTransaction((transaction) async {
   state1.setValueInTransaction('value1', transaction);
   state2.setValueInTransaction('value2', transaction);
   
@@ -292,6 +457,31 @@ batcher.batch(() {
   state2.value = 'new value 2';
   state3.value = 'new value 3';
 });
+```
+
+#### State Composition
+Observe multiple states without nesting:
+
+```dart
+// Observe multiple states simultaneously
+StateComposer(
+  states: {
+    'user': userState,
+    'settings': settingsState,
+    'notifications': notificationsState,
+  },
+  builder: (context, states) {
+    final user = states['user'] as User?;
+    final settings = states['settings'] as Settings?;
+    final notifications = states['notifications'] as List<Notification>?;
+    
+    return DashboardContent(
+      user: user,
+      settings: settings,
+      notifications: notifications ?? [],
+    );
+  },
+);
 ```
 
 ## 🧪 Testing

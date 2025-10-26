@@ -5,6 +5,7 @@ import 'package:flutter/foundation.dart';
 
 import 'error_recovery_strategy.dart';
 import 'state_exceptions.dart';
+import 'state_manager.dart';
 
 /// Configuration for error handling behavior.
 class ErrorHandlerConfig {
@@ -16,6 +17,9 @@ class ErrorHandlerConfig {
 
   /// Maximum time to spend on recovery attempts.
   final Duration maxRecoveryTime;
+
+  /// Timeout for individual recovery strategy attempts.
+  final Duration strategyTimeout;
 
   /// Whether to use circuit breaker for cascading failure prevention.
   final bool useCircuitBreaker;
@@ -30,6 +34,7 @@ class ErrorHandlerConfig {
     this.enableLogging = true,
     this.enableReporting = false,
     this.maxRecoveryTime = const Duration(seconds: 30),
+    this.strategyTimeout = const Duration(seconds: 5),
     this.useCircuitBreaker = true,
     this.errorReporter,
     this.logger,
@@ -56,6 +61,12 @@ class ErrorContext {
   /// Stack trace where the error was caught.
   final StackTrace? stackTrace;
 
+  /// Memory statistics at time of error.
+  final Map<String, dynamic>? memoryStats;
+
+  /// Current app lifecycle state.
+  final String? appState;
+
   ErrorContext({
     this.stateKey,
     required this.operation,
@@ -63,6 +74,8 @@ class ErrorContext {
     this.metadata = const {},
     DateTime? timestamp,
     this.stackTrace,
+    this.memoryStats,
+    this.appState,
   }) : timestamp = timestamp ?? DateTime.now();
 
   /// Creates a copy with updated values.
@@ -73,6 +86,8 @@ class ErrorContext {
     Map<String, dynamic>? metadata,
     DateTime? timestamp,
     StackTrace? stackTrace,
+    Map<String, dynamic>? memoryStats,
+    String? appState,
   }) {
     return ErrorContext(
       stateKey: stateKey ?? this.stateKey,
@@ -81,6 +96,8 @@ class ErrorContext {
       metadata: metadata ?? this.metadata,
       timestamp: timestamp ?? this.timestamp,
       stackTrace: stackTrace ?? this.stackTrace,
+      memoryStats: memoryStats ?? this.memoryStats,
+      appState: appState ?? this.appState,
     );
   }
 
@@ -93,6 +110,8 @@ class ErrorContext {
       'metadata': metadata,
       'timestamp': timestamp.toIso8601String(),
       'hasStackTrace': stackTrace != null,
+      'memoryStats': memoryStats,
+      'appState': appState,
     };
   }
 }
@@ -203,6 +222,8 @@ class StateErrorHandler {
       operation: operation,
       valueType: valueType,
       metadata: metadata ?? {},
+      memoryStats: _captureMemoryStats(),
+      appState: _captureAppState(),
     );
 
     try {
@@ -230,6 +251,8 @@ class StateErrorHandler {
       operation: operation,
       valueType: valueType,
       metadata: metadata ?? {},
+      memoryStats: _captureMemoryStats(),
+      appState: _captureAppState(),
     );
 
     try {
@@ -265,6 +288,35 @@ class StateErrorHandler {
     }
   }
 
+  /// Captures memory statistics for error context
+  Map<String, dynamic>? _captureMemoryStats() {
+    try {
+      // Try to get memory stats from StateManager if available
+      final stats = StateManager.instance.getMemoryStats();
+      return {
+        'activeStates': stats.activeStates,
+        'totalRegistered': stats.totalRegistered,
+        'disposedStates': stats.disposedStates,
+        'oldestStateAge': stats.oldestStateAge?.inSeconds,
+      };
+    } catch (e) {
+      // Ignore errors in error capture
+      return null;
+    }
+  }
+
+  /// Captures app state for error context
+  String? _captureAppState() {
+    try {
+      // This would typically integrate with Flutter's lifecycle
+      // For now, we'll return a placeholder
+      return 'unknown';
+    } catch (e) {
+      // Ignore errors in error capture
+      return null;
+    }
+  }
+
   Future<RecoveryResult<T>> _attemptRecovery<T>(
     StateException error,
     ErrorContext context, {
@@ -292,7 +344,12 @@ class StateErrorHandler {
       try {
         _log('Attempting recovery with ${strategy.name}', context: contextMap);
         
-        final result = await strategy.recover<T>(error, lastKnownValue, contextMap);
+        // Apply timeout to individual strategy attempts
+        final result = await strategy.recover<T>(error, lastKnownValue, contextMap)
+            .timeout(config.strategyTimeout, onTimeout: () {
+          _log('Strategy ${strategy.name} timed out', level: 'warning', context: contextMap);
+          return RecoveryResult.failure('Strategy timeout exceeded: ${config.strategyTimeout}');
+        });
         
         if (result.isSuccess) {
           _log('Recovery successful with ${strategy.name}', context: contextMap);

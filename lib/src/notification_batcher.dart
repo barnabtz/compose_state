@@ -48,6 +48,7 @@ class BatchingConfig {
 class NotificationBatcher {
   final BatchingConfig _config;
   final Set<VoidCallback> _pendingNotifications = {};
+  final Map<String, List<VoidCallback>> _groupedNotifications = {};
   Timer? _batchTimer;
   bool _isScheduled = false;
 
@@ -56,11 +57,20 @@ class NotificationBatcher {
   /// Schedules a notification to be batched.
   /// 
   /// [callback] - The notification callback to execute
+  /// [group] - Optional group identifier for related notifications
   /// [priority] - Optional priority for ordering notifications
-  void scheduleNotification(VoidCallback callback, {int priority = 0}) {
+  void scheduleNotification(VoidCallback callback, {String? group, int priority = 0}) {
+    if (group != null) {
+      // Group related notifications together
+      final groupList = _groupedNotifications.putIfAbsent(group, () => []);
+      groupList.add(callback);
+    } else {
+      _pendingNotifications.add(callback);
+    }
+    
     switch (_config.strategy) {
       case BatchingStrategy.immediate:
-        callback();
+        _executeNotification(callback);
         break;
       case BatchingStrategy.frame:
         _scheduleFrameNotification(callback);
@@ -71,6 +81,15 @@ class NotificationBatcher {
       case BatchingStrategy.debounced:
         _scheduleDebouncedNotification(callback);
         break;
+    }
+  }
+
+  /// Executes a single notification with error handling
+  void _executeNotification(VoidCallback callback) {
+    try {
+      callback();
+    } catch (e) {
+      debugPrint('Error executing notification: $e');
     }
   }
 
@@ -116,12 +135,27 @@ class NotificationBatcher {
 
   /// Flushes all pending notifications.
   void _flushNotifications() {
-    if (_pendingNotifications.isEmpty) {
+    if (_pendingNotifications.isEmpty && _groupedNotifications.isEmpty) {
       _isScheduled = false;
       return;
     }
 
-    // Create a copy to avoid concurrent modification
+    // Execute grouped notifications first
+    for (final groupEntry in _groupedNotifications.entries) {
+      try {
+        // Execute all notifications in the group together
+        for (final notification in groupEntry.value) {
+          notification();
+        }
+      } catch (e) {
+        debugPrint('Error executing notification group ${groupEntry.key}: $e');
+      }
+    }
+    
+    // Clear grouped notifications
+    _groupedNotifications.clear();
+
+    // Execute individual notifications
     final notifications = List<VoidCallback>.from(_pendingNotifications);
     _pendingNotifications.clear();
     _isScheduled = false;

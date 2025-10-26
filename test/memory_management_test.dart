@@ -38,8 +38,8 @@ void main() {
       registry.start();
       
       // Register states with different types and tags
-      final intState = mutableStateOf(42, tags: {'numeric', 'test'});
-      final stringState = mutableStateOf('hello', tags: {'text', 'test'});
+      final intState = taggedStateOf(42, {'numeric', 'test'});
+      final stringState = taggedStateOf('hello', {'text', 'test'});
       
       // Get states by tag
       final testStates = registry.getStatesByTag('test');
@@ -66,9 +66,9 @@ void main() {
       manager.start();
       
       // Create states
-      final state1 = mutableStateOf(1, tags: {'group1'});
-      final state2 = mutableStateOf(2, tags: {'group1'});
-      final state3 = mutableStateOf(3, tags: {'group2'});
+      final state1 = taggedStateOf(1, {'group1'});
+      final state2 = taggedStateOf(2, {'group1'});
+      final state3 = taggedStateOf(3, {'group2'});
       
       // Test getting states by tag
       final group1States = manager.getStatesByTag('group1');
