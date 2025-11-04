@@ -1,16 +1,14 @@
 import 'dart:collection';
 import 'package:compose_state/compose_state.dart';
 
-
 class OfflinePersistableState<T> extends PersistableState<T> {
   final Queue<T> _queue = Queue<T>(); // Offline queue
   bool _isOnline = true;
 
   OfflinePersistableState(
     super.initialValue, {
-    required super.fieldName,
-    required super.persistable,
-    super.typeRegistry,
+    required super.key,
+    required super.storage,
     super.enableHistory = false,
   });
 

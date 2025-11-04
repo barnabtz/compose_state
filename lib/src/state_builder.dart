@@ -4,7 +4,7 @@ import 'disposable_state.dart';
 import 'equality_checker.dart';
 import 'error_boundary.dart';
 import 'state_error_handler.dart';
-import 'state_exceptions.dart';
+
 import 'state_lifecycle_manager.dart';
 
 /// Enhanced StateBuilder with automatic disposal, error boundaries, and performance optimizations.
@@ -19,7 +19,7 @@ class StateBuilder<T> extends StatefulWidget {
   final Widget Function(BuildContext, T) builder;
   
   /// Optional error builder for displaying error states.
-  final Widget Function(BuildContext, StateException)? errorBuilder;
+  final Widget Function(BuildContext, Object)? errorBuilder;
   
   /// Optional loading builder for async operations.
   final Widget Function(BuildContext)? loadingBuilder;
@@ -63,7 +63,7 @@ class StateBuilder<T> extends StatefulWidget {
 class _StateBuilderState<T> extends State<StateBuilder<T>> with ErrorBoundary {
   late T _currentValue;
   late EqualityChecker<T> _equalityChecker;
-  StateException? _currentError;
+  Object? _currentError;
   bool _isLoading = false;
   int _buildCount = 0;
   int _skippedBuilds = 0;
@@ -159,15 +159,7 @@ class _StateBuilderState<T> extends State<StateBuilder<T>> with ErrorBoundary {
         );
         _currentError = null;
       } catch (error) {
-        if (error is StateException) {
-          _currentError = error;
-        } else {
-          _currentError = StateValidationException(
-            'Failed to get initial state value: $error',
-            cause: error,
-            violatedRule: 'initial_value_access',
-          );
-        }
+        _currentError = error;
       }
     } else {
       _currentValue = widget.state.value;
@@ -209,15 +201,7 @@ class _StateBuilderState<T> extends State<StateBuilder<T>> with ErrorBoundary {
       });
     } catch (error) {
       setState(() {
-        if (error is StateException) {
-          _currentError = error;
-        } else {
-          _currentError = StateValidationException(
-            'Failed to get state value: $error',
-            cause: error,
-            violatedRule: 'value_access',
-          );
-        }
+        _currentError = error;
         _buildCount++;
       });
     }
@@ -272,23 +256,15 @@ class _StateBuilderState<T> extends State<StateBuilder<T>> with ErrorBoundary {
         return widget.builder(context, _currentValue);
       }
     } catch (error) {
-      final stateError = error is StateException 
-          ? error 
-          : StateValidationException(
-              'Builder function failed: $error',
-              cause: error,
-              violatedRule: 'builder_execution',
-            );
-      
       if (widget.errorBuilder != null) {
-        return widget.errorBuilder!(context, stateError);
+        return widget.errorBuilder!(context, error);
       } else {
-        return _buildDefaultErrorWidget(context, stateError);
+        return _buildDefaultErrorWidget(context, error);
       }
     }
   }
 
-  Widget _buildDefaultErrorWidget(BuildContext context, StateException error) {
+  Widget _buildDefaultErrorWidget(BuildContext context, Object error) {
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
@@ -319,22 +295,12 @@ class _StateBuilderState<T> extends State<StateBuilder<T>> with ErrorBoundary {
           ),
           const SizedBox(height: 8),
           Text(
-            error.message,
+            error.toString(),
             style: const TextStyle(
               color: Color(0xFFD32F2F),
               fontSize: 12,
             ),
           ),
-          if (error.context.isNotEmpty) ...[
-            const SizedBox(height: 4),
-            Text(
-              'Context: ${error.context}',
-              style: const TextStyle(
-                color: Color(0xFF757575),
-                fontSize: 10,
-              ),
-            ),
-          ],
         ],
       ),
     );
@@ -375,7 +341,7 @@ class _StateBuilderState<T> extends State<StateBuilder<T>> with ErrorBoundary {
   }
 
   /// Gets the current error, if any.
-  StateException? get currentError => _currentError;
+  Object? get currentError => _currentError;
 
   /// Sets the loading state (useful for async operations).
   void setLoading(bool loading) {
@@ -391,7 +357,7 @@ class _StateBuilderState<T> extends State<StateBuilder<T>> with ErrorBoundary {
 Widget buildState<T>(
   ObservableState<T> state,
   Widget Function(BuildContext, T) builder, {
-  Widget Function(BuildContext, StateException)? errorBuilder,
+  Widget Function(BuildContext, Object)? errorBuilder,
   Widget Function(BuildContext)? loadingBuilder,
   EqualityChecker<T>? equalityChecker,
   bool enableOptimizations = true,

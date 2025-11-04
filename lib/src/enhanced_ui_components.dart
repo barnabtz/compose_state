@@ -20,8 +20,7 @@ class EnhancedStateBuilder<T> extends StatelessWidget {
   /// The builder function that creates the widget tree.
   final Widget Function(BuildContext, T) builder;
   
-  /// Custom error builder for displaying error states.
-  final Widget Function(BuildContext, StateException)? errorBuilder;
+  final Widget Function(BuildContext, Object)? errorBuilder;
   
   /// Custom loading builder for async operations.
   final Widget Function(BuildContext)? loadingBuilder;
@@ -212,7 +211,7 @@ class StateFormField<T> extends StatelessWidget {
     );
   }
 
-  Widget _buildFieldErrorWidget(BuildContext context, StateException error) {
+  Widget _buildFieldErrorWidget(BuildContext context, Object error) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -243,7 +242,7 @@ class StateFormField<T> extends StatelessWidget {
               const SizedBox(width: 8),
               Expanded(
                 child: Text(
-                  error.message,
+                  error is StateException ? error.message : error.toString(),
                   style: TextStyle(
                     color: Colors.red.shade700,
                     fontSize: 12,
@@ -273,7 +272,7 @@ class StateListView<T> extends StatelessWidget {
   final Widget Function(BuildContext)? loadingBuilder;
   
   /// Optional builder for error state.
-  final Widget Function(BuildContext, StateException)? errorBuilder;
+  final Widget Function(BuildContext, Object)? errorBuilder;
   
   /// Custom equality checker for list optimization.
   final EqualityChecker<List<T>>? equalityChecker;
@@ -408,7 +407,7 @@ class StateListView<T> extends StatelessWidget {
     );
   }
 
-  Widget _buildListErrorWidget(BuildContext context, StateException error) {
+  Widget _buildListErrorWidget(BuildContext context, Object error) {
     return Center(
       child: Container(
         margin: const EdgeInsets.all(16),
@@ -432,26 +431,25 @@ class StateListView<T> extends StatelessWidget {
               ),
             ),
             const SizedBox(height: 8),
-            Text(
-              error.message,
-              textAlign: TextAlign.center,
-              style: TextStyle(
-                color: Colors.red.shade600,
-                fontSize: 14,
-              ),
-            ),
-            if (error.context.isNotEmpty) ...[
-              const SizedBox(height: 8),
-              Text(
-                'Context: ${error.context}',
-                textAlign: TextAlign.center,
-                style: TextStyle(
-                  color: Colors.grey.shade600,
-                  fontSize: 12,
-                ),
-              ),
-            ],
-          ],
+                          Text(
+                            error is StateException ? error.message : error.toString(),
+                            textAlign: TextAlign.center,
+                            style: TextStyle(
+                              color: Colors.red.shade600,
+                              fontSize: 14,
+                            ),
+                          ),
+                          if (error is StateException && error.context.isNotEmpty) ...[
+                            const SizedBox(height: 8),
+                            Text(
+                              'Context: ${error.context}',
+                              textAlign: TextAlign.center,
+                              style: TextStyle(
+                                color: Colors.grey.shade600,
+                                fontSize: 12,
+                              ),
+                            ),
+                          ],          ],
         ),
       ),
     );
@@ -562,7 +560,7 @@ class StateButton<T> extends StatelessWidget {
 Widget buildEnhancedState<T>(
   ObservableState<T> state,
   Widget Function(BuildContext, T) builder, {
-  Widget Function(BuildContext, StateException)? errorBuilder,
+  Widget Function(BuildContext, Object)? errorBuilder,
   Widget Function(BuildContext)? loadingBuilder,
   EqualityChecker<T>? equalityChecker,
   bool enableOptimizations = true,
@@ -626,7 +624,7 @@ Widget buildStateListView<T>(
   Widget Function(BuildContext, T, int) itemBuilder, {
   Widget Function(BuildContext)? emptyBuilder,
   Widget Function(BuildContext)? loadingBuilder,
-  Widget Function(BuildContext, StateException)? errorBuilder,
+  Widget Function(BuildContext, Object)? errorBuilder,
   EqualityChecker<List<T>>? equalityChecker,
   bool enableOptimizations = true,
   StateErrorHandler? errorHandler,

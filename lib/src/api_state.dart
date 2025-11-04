@@ -1,135 +1,133 @@
-import 'mutable_state.dart';
-import 'observable_state.dart';
-import 'ui_state.dart';
-import 'state_error_handler.dart';
-import 'state_exceptions.dart';
+import 'dart:async';
 
-class ApiState<T> extends MutableState<UiState<T>> implements ObservableState<UiState<T>> {
+import 'package:compose_state/compose_state.dart';
+
+enum CachePolicy {
+  networkOnly,
+  cacheAndNetwork,
+  cacheElseNetwork,
+  networkOrCache,
+}
+
+class ApiState<T> extends MutableState<UiState<T>>
+    implements ObservableState<UiState<T>> {
+  final Future<T> Function(int page, Map<String, dynamic> params) _apiCall;
   final StateErrorHandler _errorHandler;
+  final CachePolicy _cachePolicy;
+  final Duration _cacheDuration;
+  final Map<String, dynamic> _apiCallParams;
 
+  int _page = 1;
+  bool _isFetching = false;
 
-  ApiState({
+  static final Map<String, _CacheEntry> _cache = {};
+
+  ApiState(
+    this._apiCall, {
     StateErrorHandler? errorHandler,
+    CachePolicy cachePolicy = CachePolicy.networkOnly,
+    Duration cacheDuration = const Duration(minutes: 5),
+    Map<String, dynamic> apiCallParams = const {},
   }) : _errorHandler = errorHandler ?? StateErrorHandler(),
-       super(const LoadingState());
+       _cachePolicy = cachePolicy,
+       _cacheDuration = cacheDuration,
+       _apiCallParams = apiCallParams,
+       super(UiState.loading());
 
-  Future<void> fetch(
-    Future<T> Function() apiCall, {
-    int maxRetries = 3,
-    Duration retryDelay = const Duration(seconds: 1),
-    T? fallbackValue,
-  }) async {
-    value = const LoadingState();
-    
-    await _errorHandler.withErrorBoundary(
-      'api_fetch',
-      () async {
-        // Use the retry strategy for automatic retry handling
-        final result = await _attemptFetchWithRetry(
-          apiCall,
-          maxRetries: maxRetries,
-          retryDelay: retryDelay,
-        );
-        
-        value = SuccessState(result);
-      },
-      stateKey: stateId,
-      valueType: UiState<T>,
-      metadata: {
-        'maxRetries': maxRetries,
-        'retryDelay': retryDelay.inMilliseconds,
-        'hasFallback': fallbackValue != null,
-      },
-    ).catchError((error) async {
-      if (error is StateException) {
-        // Try to recover using error handler
-        try {
-          final recovered = await _errorHandler.handleError<T>(
-            error,
-            ErrorContext(
-              stateKey: stateId,
-              operation: 'api_fetch',
-              valueType: T,
-              metadata: {'apiCall': 'fetch'},
-            ),
-            fallbackValue: fallbackValue,
-          );
-          value = SuccessState(recovered);
-        } catch (recoveryError) {
-          // Recovery failed, set error state
-          value = ErrorState(error.message);
+  Future<void> fetch() async {
+    if (_isFetching) return;
+    _isFetching = true;
+
+    final cacheKey = _generateCacheKey();
+
+    if (_cachePolicy == CachePolicy.cacheElseNetwork ||
+        _cachePolicy == CachePolicy.cacheAndNetwork) {
+      final cachedData = _getCachedData(cacheKey);
+      if (cachedData != null) {
+        value = UiState.success(cachedData);
+        if (_cachePolicy == CachePolicy.cacheElseNetwork) {
+          _isFetching = false;
+          return;
         }
-      } else {
-        value = ErrorState(error.toString());
       }
-    });
-  }
+    }
 
-  Future<T> _attemptFetchWithRetry(
-    Future<T> Function() apiCall, {
-    required int maxRetries,
-    required Duration retryDelay,
-  }) async {
-    Exception? lastException;
-    
-    for (int attempt = 0; attempt <= maxRetries; attempt++) {
+    value = UiState.loading();
+
+    try {
+      final result = await _apiCall(_page, _apiCallParams);
+      _updateCache(cacheKey, result);
+      value = UiState.success(result);
+    } catch (e, s) {
+      final stateError = StateConsistencyException(
+        'API call failed',
+        cause: e,
+        stackTrace: s,
+        operation: 'api_fetch',
+      );
       try {
-        return await apiCall();
-      } catch (e) {
-        lastException = e is Exception ? e : Exception(e.toString());
-        
-        if (attempt == maxRetries) {
-          // Convert to StateException for better error handling
-          throw StatePersistenceException(
-            'API call failed after $maxRetries retries: ${e.toString()}',
-            cause: lastException,
+        final recoveredResult = await _errorHandler.handleError(
+          stateError,
+          ErrorContext(
+            stateKey: stateId,
             operation: 'api_fetch',
-            context: {
-              'attempt': attempt + 1,
-              'maxRetries': maxRetries,
-              'lastError': e.toString(),
-            },
-          );
-        } else {
-          // Exponential backoff
-          final delay = retryDelay * (attempt + 1);
-          await Future.delayed(delay);
-        }
+            valueType: T,
+            metadata: {'page': _page},
+          ),
+          lastKnownValue: value.data,
+        );
+        _updateCache(cacheKey, recoveredResult);
+        value = UiState.success(recoveredResult);
+      } catch (recoveryError) {
+        value = UiState.error(recoveryError.toString());
       }
+    } finally {
+      _isFetching = false;
     }
-    
-    // This should never be reached, but just in case
-    throw lastException ?? Exception('Unknown API error');
   }
 
-  /// Refreshes the current data by re-executing the last API call.
   Future<void> refresh() async {
-    if (value is SuccessState<T>) {
-      // Re-fetch using the same parameters as the last successful call
-      // Note: This is a simplified implementation. In practice, you'd want
-      // to store the original API call parameters.
-      value = const LoadingState();
+    _page = 1;
+    await fetch();
+  }
+
+  String _generateCacheKey() {
+    return '${_apiCall.hashCode}_$_apiCallParams';
+  }
+
+  T? _getCachedData(String key) {
+    final entry = _cache[key];
+    if (entry != null && !entry.isExpired) {
+      return entry.data as T?;
     }
+    _cache.remove(key);
+    return null;
   }
 
-  /// Clears the current state and resets to loading.
-  void clear() {
-    value = const LoadingState();
-  }
-
-  /// Sets an error state manually.
-  void setError(String errorMessage) {
-    value = ErrorState(errorMessage);
-  }
-
-  /// Sets a success state manually.
-  void setSuccess(T data) {
-    value = SuccessState(data);
+  void _updateCache(String key, T data) {
+    _cache[key] = _CacheEntry(data, DateTime.now().add(_cacheDuration));
   }
 }
 
-ApiState<T> apiStateOf<T>({
+class _CacheEntry {
+  final dynamic data;
+  final DateTime expiry;
+
+  _CacheEntry(this.data, this.expiry);
+
+  bool get isExpired => DateTime.now().isAfter(expiry);
+}
+
+ApiState<T> apiStateOf<T>(
+  Future<T> Function(int page, Map<String, dynamic> params) apiCall, {
   StateErrorHandler? errorHandler,
+  CachePolicy cachePolicy = CachePolicy.networkOnly,
+  Duration cacheDuration = const Duration(minutes: 5),
+  Map<String, dynamic> apiCallParams = const {},
 }) => ApiState<T>(
+  apiCall,
   errorHandler: errorHandler,
+  cachePolicy: cachePolicy,
+  cacheDuration: cacheDuration,
+  apiCallParams: apiCallParams,
 );

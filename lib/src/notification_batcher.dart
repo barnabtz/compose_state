@@ -60,6 +60,10 @@ class NotificationBatcher {
   /// [group] - Optional group identifier for related notifications
   /// [priority] - Optional priority for ordering notifications
   void scheduleNotification(VoidCallback callback, {String? group, int priority = 0}) {
+    if (_config.strategy == BatchingStrategy.immediate) {
+      _executeNotification(callback);
+      return;
+    }
     if (group != null) {
       // Group related notifications together
       final groupList = _groupedNotifications.putIfAbsent(group, () => []);
@@ -70,7 +74,7 @@ class NotificationBatcher {
     
     switch (_config.strategy) {
       case BatchingStrategy.immediate:
-        _executeNotification(callback);
+        // Already handled
         break;
       case BatchingStrategy.frame:
         _scheduleFrameNotification(callback);

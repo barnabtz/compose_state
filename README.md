@@ -38,7 +38,7 @@ A comprehensive Flutter state management package inspired by Jetpack Compose, of
 
 ```yaml
 dependencies:
-  compose_state: ^0.1.0
+  compose_state: ^0.2.0-dev.1
 ```
 
 ## 🏃 Quick Start
@@ -105,7 +105,7 @@ StateBuilder<String>(
 ```dart
 // Create an API state with automatic error handling and retry
 final userState = apiStateOf<User>(
-  () => ApiService.fetchUser(userId),
+  (page, params) => ApiService.fetchUser(userId),
   errorHandler: StateErrorHandler(
     defaultStrategy: RetryStrategy(maxAttempts: 3),
   ),
@@ -338,7 +338,7 @@ Handles asynchronous operations with comprehensive error handling:
 
 ```dart
 final postsState = apiStateOf<List<Post>>(
-  () => ApiService.fetchPosts(),
+  (page, params) => ApiService.fetchPosts(),
   errorHandler: StateErrorHandler(
     defaultStrategy: RetryStrategy(
       maxAttempts: 3,

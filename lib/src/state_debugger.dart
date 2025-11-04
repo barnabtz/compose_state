@@ -9,13 +9,13 @@ class StateDebugger<T> implements ObservableState<T> {
 
   @override
   T get value {
-    debugPrint('[$_name] Get value: ${_wrapped.value}');
+    debugPrint('[${DateTime.now()}] [$_name] Get value: ${_wrapped.value}');
     return _wrapped.value;
   }
 
   @override
   set value(T newValue) {
-    debugPrint('[$_name] Set value: $newValue');
+    debugPrint('[${DateTime.now()}] [$_name] Set value: $newValue');
     _wrapped.value = newValue;
   }
 
@@ -30,25 +30,25 @@ class StateDebugger<T> implements ObservableState<T> {
 
   @override
   bool equals(T other) {
-    debugPrint('[$_name] Equals check: ${_wrapped.value} == $other');
+    debugPrint('[${DateTime.now()}] [$_name] Equals check: ${_wrapped.value} == $other');
     return _wrapped.equals(other);
   }
 
   @override
   StateSnapshot<T> createSnapshot() {
-    debugPrint('[$_name] Creating snapshot');
+    debugPrint('[${DateTime.now()}] [$_name] Creating snapshot');
     return _wrapped.createSnapshot();
   }
 
   @override
   void restoreSnapshot(StateSnapshot<T> snapshot) {
-    debugPrint('[$_name] Restoring snapshot: ${snapshot.value}');
+    debugPrint('[${DateTime.now()}] [$_name] Restoring snapshot: ${snapshot.value}');
     _wrapped.restoreSnapshot(snapshot);
   }
 
   @override
   void dispose() {
-    debugPrint('[$_name] Disposing state');
+    debugPrint('[${DateTime.now()}] [$_name] Disposing state');
     _wrapped.dispose();
   }
 }

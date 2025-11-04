@@ -1,6 +1,6 @@
 import 'dart:async';
 import 'package:flutter/foundation.dart';
-import 'compose_view_model.dart';
+
 import 'disposable_state.dart';
 import 'history_state.dart';
 import 'mutable_state.dart';
@@ -10,14 +10,14 @@ import 'state_error_handler.dart';
 import 'state_exceptions.dart';
 import 'serialization_validator.dart';
 import 'state_transaction.dart';
+import 'storage.dart';
 
 class PersistableState<T> extends ChangeNotifier 
     with DisposableState 
     implements ObservableState<T> {
   final MutableState<T> _state;
   final String _key;
-  final Persistable _persistable;
-  final Map<String, Serializable Function(String)>? typeRegistry;
+  final Storage _storage;
   Timer? _debounceTimer;
   late final String _stateId;
   final StateErrorHandler _errorHandler;
@@ -27,14 +27,13 @@ class PersistableState<T> extends ChangeNotifier
 
   PersistableState(
     T initialValue, {
-    required String fieldName,
-    required Persistable persistable,
-    this.typeRegistry,
+    required String key,
+    required Storage storage,
     bool enableHistory = false,
     StateErrorHandler? errorHandler,
   })  : _state = enableHistory ? HistoryState(initialValue) : MutableState(initialValue),
-        _key = '${persistable.runtimeType}_$fieldName',
-        _persistable = persistable,
+        _key = key,
+        _storage = storage,
         _errorHandler = errorHandler ?? StateErrorHandler(),
         _validator = SerializationValidator.instance {
     _stateId = StateManager.instance.registerState(this);
@@ -62,7 +61,6 @@ class PersistableState<T> extends ChangeNotifier
       () {
         checkNotDisposed();
         
-        // Validate serialization before setting
         _validator.validateSerialization<T>(newValue);
         
         if (isInTransaction) {
@@ -101,7 +99,6 @@ class PersistableState<T> extends ChangeNotifier
       metadata: {
         ...baseSnapshot.metadata,
         'persistenceKey': _key,
-        'hasTypeRegistry': typeRegistry != null,
       },
     );
   }
@@ -119,20 +116,10 @@ class PersistableState<T> extends ChangeNotifier
     await _errorHandler.withErrorBoundary(
       'load_state',
       () async {
-        if (_state.value is List && typeRegistry != null) {
-          final saved = await _persistable.restoreDynamicList(_key, typeRegistry!);
-          if (saved.isNotEmpty && !isDisposed) {
-            // Validate deserialized data
-            _validator.validateDeserialization<T>(saved);
-            _state.setValue(saved as T);
-          }
-        } else {
-          final saved = await _persistable.restore<T>(_key);
-          if (saved != null && !isDisposed) {
-            // Validate deserialized data
-            _validator.validateDeserialization<T>(saved);
-            _state.setValue(saved);
-          }
+        final saved = await _storage.read<T>(_key);
+        if (saved != null && !isDisposed) {
+          _validator.validateDeserialization<T>(saved);
+          _state.setValue(saved);
         }
       },
       stateKey: _stateId,
@@ -140,7 +127,6 @@ class PersistableState<T> extends ChangeNotifier
       metadata: {'key': _key, 'operation': 'load'},
     ).catchError((error) async {
       if (error is StateException) {
-        // Try to recover from load error
         final recovered = await _errorHandler.handleError<T>(
           error,
           ErrorContext(
@@ -164,21 +150,14 @@ class PersistableState<T> extends ChangeNotifier
     await _errorHandler.withErrorBoundary(
       'persist_state',
       () async {
-        // Validate before persisting
         _validator.validateSerialization<T>(_state.value);
-        
-        if (_state.value is List && typeRegistry != null) {
-          await _persistable.persistDynamicList(_key, _state.value as List<dynamic>);
-        } else {
-          await _persistable.persist(_key, _state.value);
-        }
+        await _storage.write<T>(_key, _state.value);
       },
       stateKey: _stateId,
       valueType: T,
       metadata: {'key': _key, 'operation': 'persist'},
     ).catchError((error) async {
       if (error is StateException) {
-        // Try to recover from persist error
         await _errorHandler.handleError<void>(
           error,
           ErrorContext(
@@ -199,31 +178,24 @@ class PersistableState<T> extends ChangeNotifier
     _debounceTimer = Timer(_debounceDuration, _persist);
   }
 
-  /// Whether this state is currently participating in a transaction.
   bool get isInTransaction => _currentTransaction != null;
 
-  /// Sets the value within a transaction context.
   void setValueInTransaction(T newValue, [StateTransaction? transaction]) {
     final txn = transaction ?? _currentTransaction;
     
     if (txn != null) {
-      // Record the change in the transaction
       final previousValue = _state.value;
       txn.addState(this);
       
-      // Set the new value
       _state.setValue(newValue);
       
-      // Record the change for rollback purposes
       txn.recordChange(this, previousValue, newValue);
     } else {
-      // No transaction, just set the value normally
       _state.setValue(newValue);
       _debouncePersist();
     }
   }
 
-  /// Joins a transaction.
   void joinTransaction(StateTransaction transaction) {
     if (_currentTransaction != null && _currentTransaction != transaction) {
       throw StateConsistencyException(
@@ -236,7 +208,6 @@ class PersistableState<T> extends ChangeNotifier
     _currentTransaction = transaction;
     transaction.addState(this);
     
-    // Add cleanup callback when transaction completes
     transaction.addCommitCallback(() {
       _currentTransaction = null;
     });
@@ -246,7 +217,6 @@ class PersistableState<T> extends ChangeNotifier
     });
   }
 
-  /// Leaves the current transaction.
   void leaveTransaction() {
     _currentTransaction = null;
   }
@@ -257,7 +227,6 @@ class PersistableState<T> extends ChangeNotifier
     if (!isDisposed) {
       _persist();
     }
-    // Leave any current transaction before disposing
     if (_currentTransaction != null) {
       leaveTransaction();
     }
@@ -268,19 +237,17 @@ class PersistableState<T> extends ChangeNotifier
   }
 }
 
-PersistableState<T> persistableState<T>(
+PersistableState<T> persistableStateOf<T>(
+  String key,
   T initialValue, {
-  required String fieldName,
-  required Persistable persistable,
-  Map<String, Serializable Function(String)>? typeRegistry,
+  Storage? storage,
   bool enableHistory = false,
   StateErrorHandler? errorHandler,
 }) =>
     PersistableState(
       initialValue,
-      fieldName: fieldName,
-      persistable: persistable,
-      typeRegistry: typeRegistry,
+      key: key,
+      storage: storage ?? SharedPreferencesStorage(),
       enableHistory: enableHistory,
       errorHandler: errorHandler,
     );
